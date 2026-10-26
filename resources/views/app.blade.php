@@ -43,7 +43,9 @@
     </style>
 <link rel="stylesheet" href="{{ asset('Style1/css/project-status.css') }}">
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased flex flex-col min-h-screen">
+<body class="public-site bg-gray-50 text-gray-900 antialiased flex flex-col min-h-screen">
+
+    <a href="#contenu" class="skip-link">Aller au contenu</a>
 
     <!-- ── Navigation ─────────────────────────────────────────────────────── -->
     <header x-data="{ mobileMenuOpen: false, scrolled: false }"
@@ -61,7 +63,7 @@
 
             <!-- Bouton hamburger mobile -->
             <div class="flex lg:hidden">
-                <button type="button" @click="mobileMenuOpen = true"
+                <button type="button" @click="mobileMenuOpen = true; $nextTick(() => $refs.closeMenu.focus())" :aria-expanded="mobileMenuOpen" aria-controls="mobile-navigation"
                         class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 hover:bg-gray-100 transition-colors">
                     <span class="sr-only">Ouvrir le menu</span>
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -118,7 +120,7 @@
         </nav>
 
         <!-- Menu mobile -->
-        <div x-show="mobileMenuOpen" class="lg:hidden" role="dialog" aria-modal="true" x-cloak>
+        <div id="mobile-navigation" x-show="mobileMenuOpen" class="lg:hidden" aria-label="Navigation mobile" x-cloak>
             <div class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm" @click="mobileMenuOpen = false"></div>
             <div class="fixed right-0 top-0 z-50 max-h-screen w-full overflow-y-auto bg-white px-6 py-6 sm:ring-1 sm:ring-gray-900/10"
                  x-transition:enter="transform transition ease-in-out duration-300"
@@ -131,7 +133,7 @@
                     <a href="{{ url('/') }}" class="-m-1.5 p-1.5">
                         <img class="h-10 w-auto" src="{{ asset('Style1/images/logo.png') }}" alt="Logo VEF">
                     </a>
-                    <button type="button" aria-label="Fermer le menu" @click="mobileMenuOpen = false" class="-m-2.5 rounded-md p-2.5 text-gray-700 hover:bg-gray-100">
+                    <button type="button" x-ref="closeMenu" aria-label="Fermer le menu" @click="mobileMenuOpen = false" class="-m-2.5 rounded-md p-2.5 text-gray-700 hover:bg-gray-100">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -169,7 +171,7 @@
     </header>
 
     <!-- ── Contenu principal ───────────────────────────────────────────────── -->
-    <main class="flex-grow pt-20">
+    <main id="contenu" class="flex-grow pt-20" tabindex="-1">
         @if(session('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
                  class="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg text-sm font-semibold flex items-center gap-2">
@@ -187,7 +189,7 @@
 
     <!-- ── Footer ─────────────────────────────────────────────────────────── -->
     <footer class="bg-gray-900 text-white" aria-labelledby="footer-heading">
-        <h2 id="footer-heading" class="sr-only">Footer</h2>
+        <h2 id="footer-heading" class="sr-only">À propos et coordonnées de l’association</h2>
         <div class="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-24 lg:px-8 lg:pt-32">
             <div class="xl:grid xl:grid-cols-3 xl:gap-8">
                 <div class="space-y-8">
@@ -260,7 +262,9 @@
     <!-- AOS -->
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script>
-        AOS.init({ duration: 700, once: true, offset: 60 });
+        if (window.AOS && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            AOS.init({ duration: 700, once: true, offset: 60 });
+        }
     </script>
     @stack('scripts')
 </body>

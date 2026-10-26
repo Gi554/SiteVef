@@ -5,7 +5,7 @@
 @section('og_image', asset('Style1/images/VEF.jpeg'))
 
 @section('content')
-    <section class="overflow-hidden bg-white">
+    <section class="sponsorship-intro overflow-hidden bg-white">
         <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 py-14 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:px-8">
             <div>
                 <p class="text-sm font-bold tracking-widest text-blue-700">LES PROGRAMMES DE PARRAINAGE</p>
@@ -40,7 +40,7 @@
         </div>
     </section>
 
-    <section id="programmes" class="scroll-mt-24 bg-gray-50 py-16 sm:py-20" aria-labelledby="programmes-title">
+    <section id="programmes" class="sponsorship-programmes scroll-mt-24 bg-gray-50 py-16 sm:py-20" aria-labelledby="programmes-title">
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <div class="mb-10 max-w-2xl">
                 <p class="text-sm font-bold tracking-widest text-blue-700">DEUX FAÇONS D’ÊTRE PRÉSENT</p>
@@ -65,7 +65,7 @@
             <ol class="mt-10 grid gap-8 md:grid-cols-3">
                 @foreach([
                     ['titre' => 'Découvrez votre programme', 'texte' => 'Prenez connaissance de son objectif et de la contribution mensuelle proposée.'],
-                    ['titre' => 'Échangez avec notre équipe', 'texte' => 'Le bouton du programme vous conduit au formulaire de contact, avec l’objet de votre demande déjà renseigné.'],
+                    ['titre' => 'Échangez avec notre équipe', 'texte' => 'Parlez-nous de votre envie de parrainer. Notre équipe répond à vos questions et vous présente le programme.'],
                     ['titre' => 'Préparez votre engagement', 'texte' => 'Nous précisons ensemble la mise en place du parrainage, les versements et le suivi proposé.'],
                 ] as $etape)
                     <li class="rounded-2xl border border-gray-100 bg-gray-50 p-7">

@@ -8,18 +8,19 @@
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
 {{-- HERO                                                                    --}}
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
-<section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+<section id="hero" class="relative min-h-[720px] flex items-center justify-center overflow-hidden">
     <div class="absolute inset-0 z-0">
         <img src="{{ asset('Style1/images/VEF.jpeg') }}" alt="Enfants aidés par VEF"
-             class="w-full h-full object-cover object-center">
+             fetchpriority="high" class="w-full h-full object-cover object-center">
         <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-gray-900/90"></div>
     </div>
 
     <div class="relative z-10 text-center w-full px-6 sm:px-8 max-w-4xl mx-auto space-y-6 py-24"
          data-aos="fade-up" data-aos-duration="900">
+        <p class="hero-eyebrow">VERRE D’EAU FRAÎCHE · ASSOCIATION HUMANITAIRE AU BÉNIN</p>
         <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight drop-shadow-lg">
-            BIENVENUE À<br>
-            <span class="text-blue-400">VERRE D'EAU FRAÎCHE</span>
+            Ensemble, ouvrons<br>
+            <span class="text-blue-400">de nouvelles perspectives.</span>
         </h1>
         <p class="text-lg sm:text-xl md:text-2xl text-gray-200 font-light">
             "Agissons pour chacun, agissons pour tous."
@@ -28,9 +29,9 @@
             Nous œuvrons chaque jour pour améliorer la vie des plus vulnérables à travers l'éducation, la santé et l'autonomisation.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <a href="{{ route('rejoindre') }}"
+            <a href="{{ route('donation.index') }}"
                class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all hover:scale-105 shadow-lg">
-                Nous rejoindre
+                Faire un don
             </a>
             <a href="#services"
                class="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full hover:bg-white hover:text-gray-900 transition-all hover:scale-105">
@@ -40,7 +41,7 @@
     </div>
 
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <a href="#about" class="text-white/70 hover:text-white transition-colors">
+        <a href="#about" aria-label="Découvrir l’association" class="text-white/70 hover:text-white transition-colors">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7-7-7m7 7V3"/>
             </svg>
@@ -115,8 +116,40 @@
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
 {{-- PROJETS EN COURS                                                        --}}
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
-<section id="services" class="py-24 bg-gray-50"><div class="max-w-7xl mx-auto px-6"><div class="flex flex-wrap gap-6 items-end justify-between mb-12"><div><p class="text-blue-700 font-semibold">NOS ACTIONS</p><h2 class="text-3xl font-bold mt-3">Des projets pour agir ensemble</h2></div><a class="text-blue-700 font-semibold" href="{{ route('projets.index') }}">Voir tous les projets →</a></div><div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">@forelse($projets->where('statut','en_cours')->take(3) as $projet)<x-project-card :projet="$projet"/>@empty<p class="text-gray-600">Retrouvez les initiatives de l’association sur la page de nos projets.</p>@endforelse</div></div></section>
-@if($actualites->isNotEmpty())<section class="py-20 bg-white"><div class="max-w-7xl mx-auto px-6"><div class="flex flex-wrap gap-6 items-end justify-between mb-10"><h2 class="text-3xl font-bold">Les dernières actualités</h2><a href="{{ route('actualites.index') }}" class="text-blue-700 font-semibold">Toutes les actualités →</a></div><div class="grid md:grid-cols-3 gap-8">@foreach($actualites as $article)<x-article-card :article="$article"/>@endforeach</div></div></section>@endif
+<section id="services" class="py-24 bg-gray-50" aria-labelledby="home-projects-title">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-wrap gap-6 items-end justify-between mb-12">
+            <div>
+                <p class="eyebrow">NOS ACTIONS</p>
+                <h2 id="home-projects-title" class="text-3xl font-bold mt-3">Des projets pour agir ensemble</h2>
+            </div>
+            <a class="text-blue-700 font-semibold" href="{{ route('projets.index') }}">Voir tous les projets →</a>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @forelse($projets->where('statut', 'en_cours')->take(3) as $projet)
+                <x-project-card :projet="$projet" />
+            @empty
+                <p class="text-gray-600">Retrouvez les initiatives de l’association sur la page de nos projets.</p>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+@if($actualites->isNotEmpty())
+    <section class="py-20 bg-white" aria-labelledby="home-news-title">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-wrap gap-6 items-end justify-between mb-10">
+                <h2 id="home-news-title" class="text-3xl font-bold">Les dernières actualités</h2>
+                <a href="{{ route('actualites.index') }}" class="text-blue-700 font-semibold">Toutes les actualités →</a>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                @foreach($actualites as $article)
+                    <x-article-card :article="$article" />
+                @endforeach
+            </div>
+        </div>
+    </section>
+@endif
 
 
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
@@ -325,9 +358,9 @@
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
 <section id="support" class="py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl shadow-2xl overflow-hidden" data-aos="zoom-in">
+        <div class="bg-blue-900 rounded-3xl shadow-sm overflow-hidden" data-aos="zoom-in">
             <div class="grid grid-cols-1 lg:grid-cols-2">
-                <div class="p-12 lg:p-20 flex flex-col justify-center">
+                <div class="p-8 sm:p-12 lg:p-20 flex flex-col justify-center">
                     <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl mb-6">Soutenez-nous</h2>
                     <p class="text-blue-100 text-lg leading-relaxed mb-10">
                         Votre soutien est essentiel pour mener à bien nos missions humanitaires. Chaque contribution,
@@ -335,14 +368,13 @@
                     </p>
                     <div>
                         <a href="{{ route('donation.index') }}"
-                           class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-blue-700 bg-white hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                           class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-blue-900 bg-white hover:bg-blue-50 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-1">
                             Donnez le sourire 
                         </a>
                     </div>
                 </div>
                 <div class="relative h-64 lg:h-auto">
                     <img src="{{ asset('Style1/images/enfantAide.jpg') }}" alt="Enfant aidé" class="absolute inset-0 w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-blue-900/20"></div>
                 </div>
             </div>
         </div>

@@ -1,8 +1,11 @@
 @props(['programme'])
-<article id="programme-{{ $programme->code }}" class="scroll-mt-28 flex flex-col overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
+<article id="programme-{{ $programme->code }}" class="programme-card scroll-mt-28 flex flex-col overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
     @if($programme->image)
         <img src="{{ asset($programme->image) }}" alt="{{ $programme->image_alt }}"
              loading="lazy" class="h-64 w-full object-cover">
+    @else
+        <img src="{{ asset($programme->code === \App\Models\ProgrammeParrainage::ENFANT ? 'Style1/images/ecole.jpg' : 'Style1/images/soins.jpg') }}"
+             alt="" loading="lazy" width="800" height="480" class="h-64 w-full object-cover">
     @endif
 
     <div class="flex flex-1 flex-col p-7 sm:p-10">
@@ -18,7 +21,7 @@
         <h3 class="text-2xl font-bold tracking-tight text-gray-900">{{ $programme->titre }}</h3>
         <p class="mt-3 text-lg leading-7 text-gray-700">{{ $programme->accroche }}</p>
 
-        <div class="my-7 rounded-xl bg-gray-50 px-5 py-5">
+        <div class="programme-card__amount my-7 rounded-xl bg-gray-50 px-5 py-5">
             @if($programme->montant_mensuel_centimes !== null)
                 <p class="text-blue-700">
                     <strong class="text-4xl font-extrabold">{{ number_format($programme->montant_mensuel_centimes / 100, $programme->montant_mensuel_centimes % 100 === 0 ? 0 : 2, ',', ' ') }} €</strong>
