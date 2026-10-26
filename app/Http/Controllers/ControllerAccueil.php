@@ -63,7 +63,7 @@ class ControllerAccueil extends Controller
             'lu' => false,
         ]);
 
-        Mail::to('fernandtovignonnou@gmail.com')->send(new NouveauMessage($contactMessage));
+        Mail::to('contact@verredeaufraiche.com')->send(new NouveauMessage($contactMessage));
 
         return redirect()->route('index')->with('success', 'Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.');
     }
