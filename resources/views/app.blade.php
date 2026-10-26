@@ -235,15 +235,15 @@
                             <ul role="list" class="mt-6 space-y-4">
                                 <li class="flex items-start gap-x-3 text-sm text-gray-300">
                                     <span class="text-blue-500">📍</span>
-                                    <span>Lot 1230, Quartier Fidjrossè,<br>Cotonou, Bénin</span>
+                                    <span>Gbedjromédé 1, Rue 6.132.carré/ Ilot 1209, Maison FANOU, C. ANTOINE<br>Cotonou, Bénin</span>
                                 </li>
                                 <li class="flex items-center gap-x-3 text-sm text-gray-300">
                                     <span class="text-blue-500">📞</span>
-                                    <a href="tel:+22997000000" class="hover:text-white transition-colors">+229 97 00 00 00</a>
+                                    <a href="tel:+2290196501084" class="hover:text-white transition-colors">+229 01 96 50 10 84</a>
                                 </li>
                                 <li class="flex items-center gap-x-3 text-sm text-gray-300">
                                     <span class="text-blue-500">✉️</span>
-                                    <a href="mailto:contact@verredeaufraiche.org" class="hover:text-white transition-colors">contact@verredeaufraiche.org</a>
+                                    <a href="mailto:contact@verredeaufraiche.com" class="hover:text-white transition-colors">contact@verredeaufraiche.com</a>
                                 </li>
                             </ul>
                         </div>
