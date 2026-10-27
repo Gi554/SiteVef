@@ -484,6 +484,8 @@
     </div>
 </section>
 
+@endsection
+
 {{-- ── Modale détail projet ──────────────────────────────────────────────────── --}}
 @push('scripts')
 <script>
