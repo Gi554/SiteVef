@@ -27,6 +27,7 @@ class NouveauMessage extends Mailable
     {
         return new Content(
             view: 'emails.nouveau_message',
+            text: 'emails.text.nouveau_message',
         );
     }
 }

@@ -27,6 +27,7 @@ class NouvelleCandidature extends Mailable
     {
         return new Content(
             view: 'emails.nouvelle_candidature',
+            text: 'emails.text.nouvelle_candidature',
         );
     }
 }
