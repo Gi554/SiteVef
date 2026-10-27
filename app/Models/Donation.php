@@ -6,7 +6,9 @@ class Donation extends \Illuminate\Database\Eloquent\Model
 {
     protected $guarded = ['id'];
 
-    protected $casts = ['confirmed_at' => 'datetime', 'amount_centimes' => 'integer'];
+    protected $attributes = ['provider' => 'kkiapay'];
+
+    protected $casts = ['confirmed_at' => 'datetime', 'amount_centimes' => 'integer', 'amount_xof' => 'integer'];
 
     public function projet()
     {
