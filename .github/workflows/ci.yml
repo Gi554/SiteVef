@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [version1]
+  push:
+    branches: [version1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pest 4 / PHPUnit 12 nécessitent PHP 8.3 ou supérieur.
+        php: ['8.3', '8.4']
+    env:
+      APP_ENV: testing
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      MAIL_MAILER: array
+      QUEUE_CONNECTION: sync
+      KKIAPAY_SANDBOX: 'true'
+      KKIAPAY_PUBLIC_KEY: ''
+      KKIAPAY_PRIVATE_KEY: ''
+      KKIAPAY_SECRET_KEY: ''
+      KKIAPAY_WEBHOOK_SECRET: ''
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Installer PHP et Composer
+        uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, xml, curl, pdo_sqlite, sqlite3, gd, intl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Vérifier les dépendances PHP déclarées
+        run: composer validate --strict
+
+      - name: Installer les dépendances PHP verrouillées
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Préparer un environnement de test sans secrets
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      - name: Installer les dépendances JavaScript verrouillées
+        run: npm ci --no-audit --no-fund
+
+      - name: Compiler les ressources du site
+        run: npm run build
+
+      - name: Exécuter tous les tests Laravel
+        run: php artisan test --compact --fail-on-risky --fail-on-warning
+
+      - name: Vérifier les pages, les accès et les dons
+        run: php tests/Smoke/editorial.php
+
+      - name: Vérifier le parcours de parrainage
+        run: php tests/Smoke/parrainage.php
