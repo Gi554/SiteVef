@@ -110,7 +110,7 @@
 </div>
 <label>
 <input type="checkbox" name="dons_actifs" value="1" @checked(old('dons_actifs', $projet->dons_actifs))> Autoriser les dons pour ce projet</label>
-<p class="editorial-help">Le montant collecté provient exclusivement des paiements confirmés par Stripe. Il n’est pas modifiable manuellement.</p>
+<p class="editorial-help">Le montant collecté provient exclusivement des paiements confirmés. Les nouveaux dons sont vérifiés auprès de Kkiapay. Il n’est pas modifiable manuellement.</p>
 </section>
 <section class="editorial-section">
 <h2>Image principale et galerie</h2>

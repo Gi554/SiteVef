@@ -66,11 +66,11 @@
 <div class="admin-panel" id="dons">
 <div class="panel-header">
 <h1>Dons et collectes</h1>
-<p>Seules les confirmations signées de Stripe valident les paiements.</p>
+<p>Les dons sont validés après vérification du paiement auprès de Kkiapay.</p>
 </div>
 <div class="panel-content">
-@if(!config('cashier.secret') || !config('cashier.webhook.secret'))<div class="editorial-section">
-<p>La collecte en ligne nécessite la configuration de Stripe et de son secret de webhook. Aucun paiement n’est simulé.</p>
+@if(!\App\Services\Kkiapay::available() || !config('kkiapay.webhook_secret'))<div class="editorial-section">
+<p>Configurer les clés API Kkiapay et le secret webhook pour assurer la collecte et sa confirmation automatique.</p>
 </div>
 @endif
 <section class="editorial-section">
@@ -118,7 +118,9 @@
 <td>{{ $donation->created_at->format('d/m/Y H:i') }}</td>
 <td>{{ $donation->reference }}</td>
 <td>{{ $donation->projet?->titre ?? 'Don général' }}</td>
-<td>{{ number_format($donation->amount_centimes/100,2,',',' ') }} €</td>
+<td>{{ number_format($donation->amount_centimes/100,2,',',' ') }} €
+@if($donation->provider === 'kkiapay')<br><small>Kkiapay · {{ number_format($donation->amount_xof, 0, ',', ' ') }} FCFA<br>{{ $donation->kkiapay_transaction_id ?? 'En attente' }}</small>@else<br><small>Stripe</small>@endif
+</td>
 <td>{{ ['pending'=>'En attente','confirmed'=>'Confirmé','failed'=>'Échoué','expired'=>'Expiré'][$donation->status] ?? $donation->status }}</td>
 </tr>
 @empty<tr>

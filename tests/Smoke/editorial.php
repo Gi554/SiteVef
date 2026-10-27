@@ -61,20 +61,20 @@ check($created->projets->contains($new) && $created->published_at !== null, 'Art
 $originalSlug = $new->slug;
 $kernel->handle(Illuminate\Http\Request::create('/administrateur/projet/'.$new->id, 'PUT', ['titre' => 'Titre modifié', 'publication' => 'publie', 'statut' => 'en_cours']));
 check($new->fresh()->slug === $originalSlug, 'Project URL stable after title change');
-config(['cashier.webhook.secret' => 'whsec_test_only']);
-$d = App\Models\Donation::create(['reference' => (string) Illuminate\Support\Str::uuid(), 'projet_id' => $project->id, 'amount_centimes' => 2500, 'currency' => 'eur', 'status' => 'pending', 'stripe_session_id' => 'cs_test_123']);
-$payload = json_encode(['id' => 'evt_test', 'object' => 'event', 'type' => 'checkout.session.completed', 'data' => ['object' => ['id' => 'cs_test_123', 'object' => 'checkout.session', 'metadata' => ['donation_reference' => $d->reference], 'amount_total' => 2500, 'currency' => 'eur', 'payment_status' => 'paid']]]);
-function webhook($kernel, $payload, $signature)
+config(['kkiapay.public_key' => 'public-test', 'kkiapay.private_key' => 'private-test', 'kkiapay.secret_key' => 'secret-test', 'kkiapay.webhook_secret' => 'webhook-test', 'kkiapay.sandbox' => true]);
+$d = App\Models\Donation::create(['reference' => (string) Illuminate\Support\Str::uuid(), 'projet_id' => $project->id, 'amount_centimes' => 2500, 'amount_xof' => 16400, 'currency' => 'eur', 'status' => 'pending']);
+Illuminate\Support\Facades\Http::preventStrayRequests();
+Illuminate\Support\Facades\Http::fake(['api-sandbox.kkiapay.me/*' => Illuminate\Support\Facades\Http::response(['status' => 'SUCCESS', 'amount' => 16400, 'partnerId' => $d->reference])]);
+$payload = json_encode(['event' => 'transaction.success', 'transactionId' => 'tx_test_123', 'partnerId' => $d->reference]);
+function webhook($kernel, $payload, $secret)
 {
-    return $kernel->handle(Illuminate\Http\Request::create('/stripe/webhook', 'POST', [], [], [], ['HTTP_STRIPE_SIGNATURE' => $signature, 'CONTENT_TYPE' => 'application/json'], $payload));
+    return $kernel->handle(Illuminate\Http\Request::create('/kkiapay/webhook', 'POST', [], [], [], ['HTTP_X_KKIAPAY_SECRET' => $secret, 'CONTENT_TYPE' => 'application/json'], $payload));
 }
-check(webhook($kernel, $payload, 'invalid')->getStatusCode() === 400 && $d->fresh()->status === 'pending', 'Invalid webhook rejected');
-$time = time();
-$signature = 't='.$time.',v1='.hash_hmac('sha256', $time.'.'.$payload, 'whsec_test_only');
-check(webhook($kernel, $payload, $signature)->getStatusCode() === 200 && $d->fresh()->status === 'confirmed', 'Signed payment confirmed');
-webhook($kernel, $payload, $signature);
+check(webhook($kernel, $payload, 'invalid')->getStatusCode() === 401 && $d->fresh()->status === 'pending', 'Invalid webhook rejected');
+check(webhook($kernel, $payload, 'webhook-test')->getStatusCode() === 200 && $d->fresh()->status === 'confirmed', 'Verified Kkiapay payment confirmed');
+webhook($kernel, $payload, 'webhook-test');
 check($project->collected === 2500, 'Duplicate webhook does not double collection');
-$kernel->handle(Illuminate\Http\Request::create('/don/merci?session_id=untrusted'));
+$kernel->handle(Illuminate\Http\Request::create('/don/merci?transaction_id=untrusted'));
 check($project->collected === 2500, 'Browser return cannot change collection');
 Illuminate\Support\Facades\Auth::logout();
 check($kernel->handle(Illuminate\Http\Request::create('/posts/'.$project->id, 'DELETE'))->isRedirect(), 'Anonymous deletion blocked');

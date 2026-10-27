@@ -25,10 +25,16 @@ Route::post('/candidature', [ControllerCandidature::class, 'store'])->middleware
 
 Route::post('/accueilMessage', [ControllerAccueil::class, 'message'])->middleware('throttle:5,1')->name('message');
 
-// Donations (Stripe)
+// Donations
 Route::get('/don', [DonationController::class, 'index'])->name('donation.index');
 Route::post('/don/checkout', [DonationController::class, 'checkout'])->middleware('throttle:10,1')->name('donation.checkout');
 Route::get('/don/merci', [DonationController::class, 'success'])->name('donation.success');
+Route::get('/don/kkiapay/{donation:reference}', [\App\Http\Controllers\KkiapayController::class, 'show'])->middleware('signed')->name('donation.kkiapay');
+Route::get('/don/kkiapay/{donation:reference}/retour', [\App\Http\Controllers\KkiapayController::class, 'paymentReturn'])
+    ->middleware([\Illuminate\Routing\Middleware\ValidateSignature::absolute(['transaction_id']), 'throttle:10,1'])
+    ->name('donation.kkiapay.return');
+Route::post('/don/kkiapay/{donation:reference}', [\App\Http\Controllers\KkiapayController::class, 'confirm'])->middleware(['signed', 'throttle:10,1'])->name('donation.kkiapay.confirm');
+Route::post('/kkiapay/webhook', [\App\Http\Controllers\KkiapayController::class, 'webhook'])->name('kkiapay.webhook');
 
 // Suppression projet (resource, seul destroy est utilisé)
 Route::delete('/posts/{post}', [PostController::class, 'destroy'])->middleware(['auth', 'can:admin'])->name('posts.destroy');
@@ -110,6 +116,5 @@ Route::middleware(['auth', 'can:admin'])->prefix('administrateur')->group(functi
     Route::put('/categories/{category}', [\App\Http\Controllers\EditorialController::class, 'saveCategory'])->name('admin.categories.update');
     Route::delete('/categories/{category}', [\App\Http\Controllers\EditorialController::class, 'deleteCategory'])->name('admin.categories.destroy');
 });
-Route::post('/stripe/webhook', [DonationController::class, 'webhook'])->name('stripe.webhook');
 
 require __DIR__.'/auth.php';
