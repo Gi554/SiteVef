@@ -41,7 +41,7 @@ class ControllerCandidature extends Controller
             'candidature_rgpd'              => true,
         ]);
 
-        Mail::to('fernandtovignonnou@gmail.com')->send(new NouvelleCandidature($candidature));
+        Mail::to('contact@verredeaufraiche.com')->send(new NouvelleCandidature($candidature));
 
         return redirect()->back()->with('success', 'Votre candidature a bien été envoyée ! Nous vous contacterons très prochainement.');
     }
