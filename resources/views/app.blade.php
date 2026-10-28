@@ -73,8 +73,9 @@
             @php
                 $navGroups = [
                     "L'association" => [
-                        'À propos' => url('/#about'),
+                        'Notre association' => route('association'),
                         'Notre équipe' => route('equipe'),
+                        'Questions fréquentes' => route('faq'),
                     ],
                     'Nos projets' => [
                         'Tous les projets' => route('projets.index'),
@@ -251,6 +252,11 @@
                 </div>
             </div>
             <div class="mt-16 border-t border-white/10 pt-8 sm:mt-20 lg:mt-24">
+                <nav aria-label="Informations pratiques et légales" class="mb-6 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-gray-300">
+                    @foreach(['faq' => 'Questions fréquentes', 'confidentialite' => 'Confidentialité', 'cookies' => 'Cookies', 'mentions-legales' => 'Mentions légales', 'conditions-utilisation' => 'Conditions d’utilisation'] as $route => $label)
+                        <a href="{{ route($route) }}" class="hover:text-white hover:underline">{{ $label }}</a>
+                    @endforeach
+                </nav>
                 <p class="text-xs text-gray-400 text-center">&copy; {{ date('Y') }} Verre d'eau fraîche — Tous droits réservés.</p>
             </div>
         </div>
