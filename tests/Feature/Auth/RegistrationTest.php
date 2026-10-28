@@ -1,5 +1,9 @@
 <?php
 
+beforeEach(function () {
+    config(['auth.registration_enabled' => true]);
+});
+
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
