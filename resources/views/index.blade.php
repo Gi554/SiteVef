@@ -18,14 +18,14 @@
     <div class="relative z-10 text-center w-full px-6 sm:px-8 max-w-4xl mx-auto space-y-6 py-24"
          data-aos="fade-up" data-aos-duration="900">
         <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight drop-shadow-lg">
-            BIENVENUE À<br>
-            <span class="text-blue-400">VERRE D'EAU FRAÎCHE</span>
+            Ensemble, faisons grandir<br>
+            <span class="text-blue-300">les solidarités au Bénin.</span>
         </h1>
         <p class="text-lg sm:text-xl md:text-2xl text-gray-200 font-light">
             "Agissons pour chacun, agissons pour tous."
         </p>
         <p class="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto">
-            Nous œuvrons chaque jour pour améliorer la vie des plus vulnérables à travers l'éducation, la santé et l'autonomisation.
+            Avec Verre d’Eau Fraîche, découvrez des façons concrètes de soutenir l’éducation, la santé et l’autonomie des personnes vulnérables.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <a href="{{ route('rejoindre') }}"
@@ -61,6 +61,7 @@
                 apolitique et non confessionnelle. Elle réunit des personnes engagées à venir en aide aux plus faibles :
                 enfants, veuves, jeunes et femmes en difficultés.
             </p>
+            <a href="{{ route('association') }}" class="mt-6 inline-block font-bold text-blue-700 underline">Mieux connaître l’association et ses engagements →</a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -203,6 +204,7 @@
 {{-- PARRAINAGE                                                              --}}
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
 @include('parrainage.teaser')
+@include('partials.home-participation')
 
 {{-- DEVENEZ BÉNÉVOLE --}}
 <section id="volunteer" class="py-24 bg-blue-900 relative overflow-hidden">
@@ -247,8 +249,8 @@
                 <div class="w-16 h-16 mx-auto bg-purple-500 rounded-full flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                     <span class="text-3xl">🤝</span>
                 </div>
-                <h3 class="text-xl font-bold text-white mb-4">Service Civique</h3>
-                <p class="text-blue-100 mb-8">Soutenez l'autonomisation économique des entrepreneurs locaux.</p>
+                <h3 class="text-xl font-bold text-white mb-4">Coup de main ponctuel</h3>
+                <p class="text-blue-100 mb-8">Proposez une aide à l’organisation, à la communication ou à une action, selon vos compétences et vos disponibilités.</p>
                 <a href="{{ route('rejoindre') }}"
                    class="inline-block px-6 py-2 border border-white text-white rounded-full hover:bg-white hover:text-blue-900 transition-colors font-medium">
                     Postuler
@@ -352,6 +354,7 @@
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
 {{-- CONTACT & CARTE                                                         --}}
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+@include('partials.home-questions')
 <section id="contact" class="scroll-mt-24 py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -398,11 +401,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="rounded-2xl overflow-hidden shadow-sm border border-gray-100 h-64 lg:h-80">
-                    <iframe class="w-full h-full border-0" title="Localisation Cotonou"
-                            loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen
-                            src="https://maps.google.com/maps?q=6.4969,2.3158&z=14&output=embed">
-                    </iframe>
+                <div class="rounded-2xl border border-blue-100 bg-blue-50 p-8">
+                    <p class="font-bold text-blue-950">Préparons votre venue à Cotonou.</p>
+                    <p class="mt-3 leading-7 text-gray-600">Avant de vous déplacer, contactez l’équipe pour convenir d’un rendez-vous et confirmer les indications d’accès.</p>
+                    <a href="https://www.google.com/maps/search/?api=1&amp;query=Gbedjromede+Cotonou+Benin" target="_blank" rel="noopener noreferrer" class="mt-5 inline-block font-bold text-blue-700 underline">Ouvrir le quartier dans Google Maps ↗</a>
+                    <p class="mt-3 text-sm leading-6 text-gray-500">La carte externe s’ouvre uniquement si vous choisissez ce lien.</p>
                 </div>
             </div>
 
@@ -474,6 +477,7 @@
                         @error('message')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
 
+                    <p class="text-sm leading-6 text-gray-500">Vos informations permettent à l’équipe de traiter votre demande et de vous répondre. <a href="{{ route('confidentialite') }}" class="font-semibold text-blue-700 underline">Comprendre l’utilisation de mes données</a>.</p>
                     <button type="submit"
                             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-all transform hover:scale-[1.02] shadow-md hover:shadow-lg">
                         Envoyer le message
@@ -483,6 +487,8 @@
         </div>
     </div>
 </section>
+
+@endsection
 
 {{-- ── Modale détail projet ──────────────────────────────────────────────────── --}}
 @push('scripts')

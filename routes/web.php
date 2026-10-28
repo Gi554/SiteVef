@@ -15,6 +15,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ControllerAccueil::class, 'index'])->name('index');
 
+Route::view('/association', 'pages.association')->name('association');
+Route::view('/questions-frequentes', 'pages.faq')->name('faq');
+foreach (['confidentialite', 'cookies', 'mentions-legales', 'conditions-utilisation'] as $page) {
+    Route::get('/'.$page, [\App\Http\Controllers\InformationController::class, 'show'])
+        ->defaults('page', $page)->name($page);
+}
+
 Route::get('/rejoindre', fn () => view('rejoindre'))->name('rejoindre');
 
 Route::get('/parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
