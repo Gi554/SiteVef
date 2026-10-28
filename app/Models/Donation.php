@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
-class Donation extends \Illuminate\Database\Eloquent\Model
+use Illuminate\Database\Eloquent\Model;
+
+class Donation extends Model
 {
     protected $guarded = ['id'];
 
@@ -12,6 +14,7 @@ class Donation extends \Illuminate\Database\Eloquent\Model
 
     public function projet()
     {
-        return $this->belongsTo(Projet::class);
+        // Conserver la destination historique même après retrait du projet.
+        return $this->belongsTo(Projet::class)->withTrashed();
     }
 }

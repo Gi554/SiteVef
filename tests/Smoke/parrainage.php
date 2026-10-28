@@ -95,6 +95,8 @@ $response = sendRequest('/accueilMessage', 'POST', [
     'objet' => $subject, 'message' => 'Je souhaite des renseignements sur ce programme.',
 ]);
 verify($response->isRedirect() && Messages::where('objet', $subject)->exists(), 'Demande enregistrée dans les messages existants');
+verify(DB::table('jobs')->where('queue', 'notifications')->count() === 1, 'Notification enregistrée dans la file durable');
+Artisan::call('queue:work', ['connection' => 'form-notifications', '--queue' => 'notifications', '--once' => true, '--timeout' => 30, '--tries' => 5]);
 verify(Mail::getFacadeRoot()->sent(NouveauMessage::class)->count() === 1, 'Notification transmise au mail existant (simulée)');
 verify(Donation::count() === 0, 'Aucune transaction créée par la prise de contact');
 
