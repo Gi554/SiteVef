@@ -1,4 +1,6 @@
-<section class="bg-gray-50 px-6 py-20 sm:py-24"><div class="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2">
-    <x-public-heading eyebrow="Des réponses avant le premier pas" title="Un engagement plus simple à comprendre.">Don général, projet précis ou parrainage : les démarches ne sont pas identiques. Prenez le temps de choisir celle qui vous correspond.<p class="mt-6"><a href="{{ route('faq') }}" class="font-bold text-blue-700 underline">Consulter toutes les questions fréquentes →</a></p></x-public-heading>
-    <div class="space-y-4">@foreach(array_slice(config('public_content.faq'), 1, 4) as $item)<details class="rounded-2xl border border-gray-200 bg-white p-6"><summary class="cursor-pointer font-bold leading-7 text-gray-900">{{ $item['question'] }}</summary><p class="mt-4 leading-8 text-gray-600">{{ $item['answer'] }}</p></details>@endforeach</div>
-</div></section>
+<section class="vef-section home-questions" aria-labelledby="home-faq-title">
+    <div class="vef-container questions-layout">
+        <div><p class="vef-eyebrow">On vous répond</p><h2 id="home-faq-title" class="vef-display vef-section-title">Avant de<br><span>faire le pas.</span></h2><p class="vef-lead">Don général, projet ou parrainage : chaque démarche a son fonctionnement. Quelques réponses pour choisir en confiance.</p><a href="{{ route('faq') }}" class="vef-text-link">Toutes les questions fréquentes <span aria-hidden="true">↗</span></a></div>
+        <div class="question-list">@foreach(array_slice(config('public_content.faq'), 1, 4) as $item)<details><summary>{{ $item['question'] }}</summary><p>{{ $item['answer'] }}</p></details>@endforeach</div>
+    </div>
+</section>
