@@ -66,6 +66,9 @@ jobs:
       - name: Installer les dépendances PHP verrouillées
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Auditer les dépendances PHP de production
+        run: composer audit --locked --no-dev
+
       - name: Préparer un environnement de test sans secrets
         run: |
           cp .env.example .env
@@ -73,6 +76,9 @@ jobs:
 
       - name: Installer les dépendances JavaScript verrouillées
         run: npm ci --no-audit --no-fund
+
+      - name: Auditer les dépendances JavaScript et les outils de build
+        run: npm audit
 
       - name: Compiler les ressources du site
         run: npm run build

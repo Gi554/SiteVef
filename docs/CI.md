@@ -51,3 +51,9 @@ Le workflow signale les erreurs ; il n’interdit pas à lui seul les pushs dire
 Les actions sont figées sur des SHA de commits plutôt que sur des références mobiles ; leurs versions doivent être révisées lors d’une mise à jour. Le jeton du workflow ne peut que lire le dépôt. Aucune fusion automatique ni publication n’est configurée.
 
 La livraison et le déploiement continus (CD) seront ajoutés séparément lorsque l’hébergement et les environnements seront définis. Le rendu Gmail/Outlook et les vrais retours ou webhooks Kkiapay restent des vérifications distinctes : une CI verte ne les remplace pas.
+
+## Audits des dépendances
+
+Chaque contrôle exécute `composer audit --locked --no-dev` et `npm audit`. Une alerte remonte une erreur dans la CI, y compris pour les outils JavaScript utilisés au build. Mettre à jour les versions concernées et les lockfiles puis relancer les tests. Ne pas masquer une alerte pour obtenir artificiellement une CI verte.
+
+Le projet déclare désormais PHP 8.3 minimum et résout ses dépendances Composer avec `config.platform.php=8.3.0` pour éviter qu’une mise à jour locale sous PHP 8.4 rende le verrou incompatible avec la matrice. Le serveur cible devra disposer de PHP 8.3 ou supérieur et des extensions vérifiées par `composer check-platform-reqs --no-dev`.
