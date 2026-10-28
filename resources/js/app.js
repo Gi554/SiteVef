@@ -1,4 +1,5 @@
 import './bootstrap';
+import './public-navigation';
 
 import Alpine from 'alpinejs';
 

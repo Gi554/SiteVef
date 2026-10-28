@@ -1,11 +1,10 @@
-@props(['article'])<article class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm flex flex-col">
-@if($article->image)<img src="{{ asset($article->image) }}" alt="{{ $article->image_alt ?? $article->titre }}" loading="lazy" class="w-full h-52 object-cover">
-@endif
-<div class="p-6 flex-1 flex flex-col">
-<p class="text-sm text-blue-700">{{ $article->published_at?->format('d/m/Y') }} @if($article->category) · {{ $article->category->nom }} @endif
-</p>
-<h3 class="text-xl font-bold mt-3">{{ $article->titre }}</h3>
-<p class="text-gray-600 mt-4 flex-1">{{ $article->extrait }}</p>
-<a class="font-semibold text-blue-700 mt-6" href="{{ route('actualites.show',$article->slug) }}">Lire l’article <span class="sr-only">{{ $article->titre }}</span> →</a>
-</div>
+@props(['article'])
+<article class="vef-content-card">
+    @if($article->image)<div class="vef-content-card__image"><img src="{{ asset($article->image) }}" alt="{{ $article->image_alt ?? $article->titre }}" loading="lazy"></div>@endif
+    <div class="vef-content-card__body">
+        <p class="vef-content-card__meta"><time datetime="{{ $article->published_at?->toDateString() }}">{{ $article->published_at?->format('d/m/Y') }}</time>@if($article->category) · {{ $article->category->nom }} @endif</p>
+        <h3>{{ $article->titre }}</h3>
+        <p class="vef-content-card__description">{{ $article->extrait }}</p>
+        <a href="{{ route('actualites.show', $article->slug) }}" class="pillar-card__link">Lire l’article <span class="sr-only">{{ $article->titre }}</span><span aria-hidden="true">↗</span></a>
+    </div>
 </article>

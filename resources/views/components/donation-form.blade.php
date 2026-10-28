@@ -2,7 +2,7 @@
 @php
     $available = \App\Services\Kkiapay::available();
 @endphp
-<form action="{{ route('donation.checkout') }}" method="post" class="mt-8 space-y-6"
+<form action="{{ route('donation.checkout') }}" method="post" class="donation-form mt-8 space-y-6"
       x-data="{ currency: 'eur', custom: '', selected: '', rate: {{ \App\Services\Money::XOF_PER_EUR }},
           get euros() { return this.custom !== '' ? (this.currency === 'xof' ? Number(this.custom) / this.rate : Number(this.custom)) : Number(this.selected); },
           get equivalent() { const euros = Math.round(this.euros * 100) / 100; return euros > 0 && Number.isFinite(euros) ? euros.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' € ≈ ' + Math.round(euros * this.rate).toLocaleString('fr-FR') + ' FCFA' : ''; }
