@@ -1,8 +1,10 @@
 @extends('app')
+@section('title', 'Bénévolat et candidatures — Verre d’Eau Fraîche')
+@section('meta_description', 'Préparez votre candidature auprès de VEF : compétences, disponibilités, motivations et étapes pour proposer votre aide à l’association.')
 
 @section('content')
 
-<main class="bg-gray-50 min-h-screen">
+<div class="bg-gray-50 min-h-screen">
     <!-- Hero Section -->
     <section class="relative bg-blue-900 py-20 sm:py-32 overflow-hidden">
         <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
@@ -14,6 +16,7 @@
         </div>
     </section>
 
+    @include('partials.volunteer-introduction')
     <!-- Form Section -->
     <section class="py-16 sm:py-24">
         <div class="max-w-3xl mx-auto px-6 lg:px-8">
@@ -156,7 +159,7 @@
                             </div>
                             <div class="text-sm leading-6">
                                 <label for="rgpd" class="font-medium text-gray-900">Confidentialité des données <span class="text-red-500">*</span></label>
-                                <p class="text-gray-500">J'accepte que mes données personnelles soient utilisées conformément à la politique de confidentialité et au RGPD.</p>
+                                <p class="text-gray-500">J’accepte l’utilisation de mes informations pour examiner ma candidature et me contacter. <a href="{{ route('confidentialite') }}" class="font-semibold text-blue-700 underline">Lire la politique de confidentialité</a>.</p>
                             </div>
                         </div>
                     </div>
@@ -172,5 +175,5 @@
             </div>
         </div>
     </section>
-</main>
+</div>
 @endsection

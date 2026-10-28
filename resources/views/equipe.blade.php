@@ -273,6 +273,8 @@
     </div>
 </section>
 
+<section class="bg-white px-6 py-16"><div class="mx-auto max-w-4xl"><x-public-heading eyebrow="Derrière les actions, des personnes" title="Des rôles et des compétences qui se complètent.">Les profils présentés sur cette page sont ceux publiés par l’association. Pour entrer en relation avec l’équipe, utilisez les coordonnées officielles de VEF : elles permettent d’orienter votre message vers les personnes concernées.</x-public-heading><p class="mt-5 leading-8 text-gray-600">Vous souhaitez proposer votre aide ? Expliquez votre expérience, vos disponibilités et le domaine qui vous intéresse. La candidature est une première étape pour discuter de votre participation, sans préjuger d’une mission ou d’un rôle disponible.</p></div></section>
+<x-public-next-step />
 @endsection
 
 @push('scripts')
