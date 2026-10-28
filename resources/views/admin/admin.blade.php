@@ -263,11 +263,11 @@
                                     <div style="display:flex; gap:8px; margin-top:8px;">
                                         <a href="{{ route('admin.projets.edit',$projet) }}" class="btn btn-secondary">Modifier</a><a href="{{ route('admin.projets.preview',$projet) }}" class="btn btn-secondary">Prévisualiser</a><span class="tag">{{ ['brouillon'=>'Brouillon','publie'=>'Publié','archive'=>'Archivé'][$projet->publication] ?? $projet->publication }}</span><x-project-status :status="$projet->statut" />
                                         <form action="{{ route('admin.projets.destroy', $projet->id) }}" method="POST"
-                                              onsubmit="return confirm('Supprimer ce projet définitivement ?')">
+                                              onsubmit="return confirm('Retirer ce projet du site ? Les dons et son historique seront conservés.')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-secondary" style="color:#ef4444; border-color:#fca5a5; background:#fef2f2; font-size:12px; padding:4px 12px;">
-                                                Supprimer
+                                                Retirer du site
                                             </button>
                                         </form>
                                     </div>

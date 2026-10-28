@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
 use App\Models\Candidature;
+use App\Models\Category;
+use App\Models\Donation;
 use App\Models\Membre;
 use App\Models\Messages;
 use App\Models\Projet;
 use App\Models\Temoignage;
 use App\Models\Visite;
+use App\Services\EditorialData;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -60,9 +65,9 @@ class AdminController extends Controller
             'evolution_visiteurs' => $evolutionVisiteurs,
         ];
 
-        $articles = \App\Models\Article::with('category')->latest()->get();
-        $categories = \App\Models\Category::orderBy('nom')->get();
-        $donations = \App\Models\Donation::with('projet')->latest()->paginate(30);
+        $articles = Article::with('category')->latest()->get();
+        $categories = Category::orderBy('nom')->get();
+        $donations = Donation::with('projet')->latest()->paginate(30);
 
         return view('admin.admin', compact('articles', 'categories', 'donations', 'projets', 'messages', 'candidatures', 'temoignages', 'membres', 'stats', 'graphLabels', 'graphDonnees'));
     }
@@ -79,14 +84,14 @@ class AdminController extends Controller
 
     private function saveProject(Request $request, Projet $projet)
     {
-        $data = \App\Services\EditorialData::project($request, $projet->exists ? $projet : null);
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $projet, $data) {
+        $data = EditorialData::project($request, $projet->exists ? $projet : null);
+        DB::transaction(function () use ($request, $projet, $data) {
             $projet->fill($data)->save();
             $removed = $request->input('supprimer_images', []);
             $projet->images()->whereIn('id', $removed)->delete();
             $order = (int) $projet->images()->max('ordre');
             foreach ($request->file('images', []) as $file) {
-                $projet->images()->create(['chemin' => \App\Services\EditorialData::upload($file, 'imagesProjets'), 'ordre' => ++$order]);
+                $projet->images()->create(['chemin' => EditorialData::upload($file, 'imagesProjets'), 'ordre' => ++$order]);
             }
             $projet->image = $projet->images()->first()?->chemin ?? ($removed ? null : $projet->image);
             if ($request->filled('couverture_id')) {
@@ -111,9 +116,12 @@ class AdminController extends Controller
     public function destroy(int $id)
     {
         $projet = Projet::findOrFail($id);
-        $projet->delete();
+        DB::transaction(function () use ($projet) {
+            $projet->update(['publication' => 'archive', 'dons_actifs' => false]);
+            $projet->delete();
+        });
 
-        return redirect()->back()->with('success', 'Projet supprimé avec succès !');
+        return redirect()->back()->with('success', 'Projet retiré du site. Son historique et les dons affectés sont conservés.');
     }
 
     public function toggleRead(int $id)
