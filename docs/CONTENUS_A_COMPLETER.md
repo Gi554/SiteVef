@@ -41,7 +41,7 @@ Les projets, articles, membres et témoignages se gèrent dans l’administratio
 - Ne pas transformer la facture Kkiapay en promesse de reçu fiscal ou d’avantage fiscal.
 - Expliquer que l’association vérifie un paiement auprès du prestataire ; un don général ne nécessite pas d’accord d’un administrateur.
 - Ne pas présenter le compteur de visites comme anonyme : le code actuel enregistre une adresse IP, une date et une page. Ne pas ajouter une fausse bannière de consentement qui ne contrôlerait rien.
-- La carte Google intégrée est remplacée par un lien explicite ; les polices et animations externes restent à documenter et à réévaluer avant une éventuelle politique de blocage des ressources tierces.
+- La carte Google intégrée est remplacée par un lien explicite ; les polices externes restent à documenter et à réévaluer avant une éventuelle politique de blocage des ressources tierces. Le chargement externe des animations AOS a été retiré lors de la refonte.
 - Les preuves chiffrées, témoignages, partenaires et documents manquants seront ajoutés quand VEF les fournira, plutôt que remplacés par des contenus de démonstration.
 
 Sources institutionnelles consultées pour les repères de confidentialité :
