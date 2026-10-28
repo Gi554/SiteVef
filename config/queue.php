@@ -44,6 +44,16 @@ return [
             'after_commit' => false,
         ],
 
+        // Les notifications des formulaires partagent la transaction métier.
+        'form-notifications' => [
+            'driver' => 'database',
+            'connection' => null,
+            'table' => 'jobs',
+            'queue' => 'notifications',
+            'retry_after' => 90,
+            'after_commit' => false,
+        ],
+
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => env('BEANSTALKD_QUEUE_HOST', 'localhost'),

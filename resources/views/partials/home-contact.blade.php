@@ -114,7 +114,7 @@
 
                     <div>
                         <label for="message" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                        <textarea id="message" name="message" rows="5" required
+                        <textarea id="message" name="message" rows="5" maxlength="10000" required
                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
                                   placeholder="Écrivez votre message ici...">{{ old('message') }}</textarea>
                         @error('message')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
