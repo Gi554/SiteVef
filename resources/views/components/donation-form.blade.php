@@ -2,7 +2,7 @@
 @php
     $available = \App\Services\Kkiapay::available();
 @endphp
-<form action="{{ route('donation.checkout') }}" method="post" class="mt-8 space-y-6"
+<form action="{{ route('donation.checkout') }}" method="post" class="donation-form mt-8 space-y-6"
       x-data="{ currency: 'eur', custom: '', selected: '', rate: {{ \App\Services\Money::XOF_PER_EUR }},
           get euros() { return this.custom !== '' ? (this.currency === 'xof' ? Number(this.custom) / this.rate : Number(this.custom)) : Number(this.selected); },
           get equivalent() { const euros = Math.round(this.euros * 100) / 100; return euros > 0 && Number.isFinite(euros) ? euros.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' € ≈ ' + Math.round(euros * this.rate).toLocaleString('fr-FR') + ' FCFA' : ''; }
@@ -45,6 +45,7 @@
     </fieldset>
     <p x-text="equivalent" role="status" aria-live="polite" class="font-semibold text-blue-700"></p>
     <p class="text-sm text-gray-500">1 € = 655,957 FCFA (XOF). Le paiement est effectué en FCFA avec Kkiapay, par Mobile Money ou carte, arrondi au franc. Des frais peuvent être appliqués par le prestataire.</p>
+    <p class="text-sm leading-6 text-gray-500">Le site conserve les références utiles au suivi du don ; les informations de paiement sont saisies auprès de Kkiapay. <a href="{{ route('confidentialite') }}#paiements" class="font-semibold text-blue-700 underline">En savoir plus sur vos données</a>.</p>
     @if(!$available)<p class="bg-blue-50 text-blue-800 p-4 rounded-xl">La collecte en ligne n’est pas encore disponible. <a href="{{ url('/#contact') }}" class="underline">Contactez l’association pour contribuer.</a></p>@endif
     <button type="submit" @disabled(!$available) class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-full font-bold">Faire un don avec Kkiapay</button>
 </form>
