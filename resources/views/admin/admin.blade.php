@@ -262,7 +262,7 @@
                                     <p style="color:#9ca3af; font-size:12px; margin-top:4px;">Ajouté le {{ $projet->created_at->format('d/m/Y') }}</p>
                                     <div style="display:flex; gap:8px; margin-top:8px;">
                                         <a href="{{ route('admin.projets.edit',$projet) }}" class="btn btn-secondary">Modifier</a><a href="{{ route('admin.projets.preview',$projet) }}" class="btn btn-secondary">Prévisualiser</a><span class="tag">{{ ['brouillon'=>'Brouillon','publie'=>'Publié','archive'=>'Archivé'][$projet->publication] ?? $projet->publication }}</span><x-project-status :status="$projet->statut" />
-                                        <form action="{{ route('posts.destroy', $projet->id) }}" method="POST"
+                                        <form action="{{ route('admin.projets.destroy', $projet->id) }}" method="POST"
                                               onsubmit="return confirm('Supprimer ce projet définitivement ?')">
                                             @csrf
                                             @method('DELETE')
@@ -762,7 +762,7 @@ function filterCandidatures() {
 
 // ── Marquer message lu / non lu (AJAX) ──────────────────────────────
 function toggleRead(id, btn) {
-    fetch(`/administrateur/messages/${id}/toggle-read`, {
+    fetch({{ Illuminate\Support\Js::from(route('admin.messages.toggleRead', ['id' => '__ID__'])) }}.replace('__ID__', encodeURIComponent(id)), {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -827,7 +827,7 @@ function openEditMembre(btn) {
     document.getElementById('edit-photo').value  = '';
 
     // Mettre à jour l'action du formulaire avec l'ID correct
-    document.getElementById('form-edit-membre').action = '/administrateur/membres/' + id;
+    document.getElementById('form-edit-membre').action = {{ Illuminate\Support\Js::from(route('admin.membres.update', ['id' => '__ID__'])) }}.replace('__ID__', encodeURIComponent(id));
 
     // Afficher la modal
     document.getElementById('modal-edit-membre').style.display = 'flex';

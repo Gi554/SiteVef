@@ -20,9 +20,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
+// Les quotas sont enregistrés en mémoire, comme les données de ce scénario.
+putenv('CACHE_STORE=array');
+$_ENV['CACHE_STORE'] = $_SERVER['CACHE_STORE'] = 'array';
 $app = require dirname(__DIR__, 2).'/bootstrap/app.php';
 $app->make(ConsoleKernel::class)->bootstrap();
 $app['env'] = 'testing';
+$adminPath = '/'.trim(config('admin.path'), '/');
 config([
     'database.default' => 'sqlite',
     'database.connections.sqlite.database' => ':memory:',
@@ -94,29 +98,29 @@ verify($response->isRedirect() && Messages::where('objet', $subject)->exists(), 
 verify(Mail::getFacadeRoot()->sent(NouveauMessage::class)->count() === 1, 'Notification transmise au mail existant (simulée)');
 verify(Donation::count() === 0, 'Aucune transaction créée par la prise de contact');
 
-verify(sendRequest('/administrateur/parrainage')->getStatusCode() === 401, 'Admin interdit aux visiteurs');
+verify(sendRequest($adminPath.'/parrainage')->getStatusCode() === 401, 'Admin interdit aux visiteurs');
 $user = User::create(['name' => 'Test', 'email' => 'admin-parrainage@example.test', 'password' => 'unused']);
 Auth::login($user);
-verify(sendRequest('/administrateur/parrainage')->getStatusCode() === 403, 'Admin interdit aux comptes ordinaires');
-verify(sendRequest('/administrateur/parrainage/enfant', 'PUT', [])->getStatusCode() === 403, 'Modification interdite aux comptes ordinaires');
+verify(sendRequest($adminPath.'/parrainage')->getStatusCode() === 403, 'Admin interdit aux comptes ordinaires');
+verify(sendRequest($adminPath.'/parrainage/enfant', 'PUT', [])->getStatusCode() === 403, 'Modification interdite aux comptes ordinaires');
 $user->forceFill(['is_admin' => true])->save();
-verify(sendRequest('/administrateur/parrainage')->getStatusCode() === 200, 'Formulaires accessibles aux administrateurs');
+verify(sendRequest($adminPath.'/parrainage')->getStatusCode() === 200, 'Formulaires accessibles aux administrateurs');
 
 $fields = ['titre' => 'Accompagner un enfant', 'accroche' => 'L’école et les repas.', 'description' => 'Un accompagnement préparé avec notre équipe.', 'montant_mensuel' => '25.50'];
-$response = sendRequest('/administrateur/parrainage/enfant', 'PUT', $fields + ['code' => 'sante']);
+$response = sendRequest($adminPath.'/parrainage/enfant', 'PUT', $fields + ['code' => 'sante']);
 verify($response->isRedirect() && $enfant->fresh()->montant_mensuel_centimes === 2550, 'Montant enregistré au centime');
 verify($enfant->fresh()->code === ProgrammeParrainage::ENFANT, 'Identifiant du parcours protégé');
 verify(str_contains(sendRequest('/parrainage')->getContent(), '25,50 €'), 'Modification immédiatement publique');
 verify(str_contains(sendRequest('/')->getContent(), '25,50 €'), 'Accueil alimenté par les mêmes données');
-verify(sendRequest('/administrateur/parrainage/enfant', 'PUT', array_replace($fields, ['montant_mensuel' => '0']))->getStatusCode() === 422, 'Montant nul refusé');
-verify(sendRequest('/administrateur/parrainage/enfant', 'PUT', array_replace($fields, ['montant_mensuel' => '25.555']))->getStatusCode() === 422, 'Précision monétaire validée');
-verify(sendRequest('/administrateur/parrainage/sante', 'PUT', $fields)->getStatusCode() === 422, 'Programme santé conservé à montant libre');
-verify(sendRequest('/administrateur/parrainage/enfant', 'PUT', $fields, ['image' => UploadedFile::fake()->create('script.php', 1)])->getStatusCode() === 422, 'Fichier exécutable refusé');
-verify(sendRequest('/administrateur/parrainage/enfant', 'PUT', $fields, ['image' => UploadedFile::fake()->image('photo.jpg')])->getStatusCode() === 422, 'Description obligatoire pour une nouvelle photo');
+verify(sendRequest($adminPath.'/parrainage/enfant', 'PUT', array_replace($fields, ['montant_mensuel' => '0']))->getStatusCode() === 422, 'Montant nul refusé');
+verify(sendRequest($adminPath.'/parrainage/enfant', 'PUT', array_replace($fields, ['montant_mensuel' => '25.555']))->getStatusCode() === 422, 'Précision monétaire validée');
+verify(sendRequest($adminPath.'/parrainage/sante', 'PUT', $fields)->getStatusCode() === 422, 'Programme santé conservé à montant libre');
+verify(sendRequest($adminPath.'/parrainage/enfant', 'PUT', $fields, ['image' => UploadedFile::fake()->create('script.php', 1)])->getStatusCode() === 422, 'Fichier exécutable refusé');
+verify(sendRequest($adminPath.'/parrainage/enfant', 'PUT', $fields, ['image' => UploadedFile::fake()->image('photo.jpg')])->getStatusCode() === 422, 'Description obligatoire pour une nouvelle photo');
 
 $photoPath = null;
 try {
-    $response = sendRequest('/administrateur/parrainage/enfant', 'PUT', $fields + ['image_alt' => 'Une action de l’association.'], ['image' => UploadedFile::fake()->image('photo.jpg')]);
+    $response = sendRequest($adminPath.'/parrainage/enfant', 'PUT', $fields + ['image_alt' => 'Une action de l’association.'], ['image' => UploadedFile::fake()->image('photo.jpg')]);
     $photoPath = $enfant->fresh()->image;
     verify($response->isRedirect() && is_file(public_path($photoPath)), 'Import photo enregistré avec un nom généré');
     verify(! str_contains($photoPath, 'photo.jpg'), 'Nom original du fichier non réutilisé');

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Donation;
 use App\Services\Kkiapay;
-use Illuminate\Http\Request;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Request;
 
 class KkiapayController extends Controller
 {
@@ -44,9 +44,6 @@ class KkiapayController extends Controller
 
     public function webhook(Request $request, Kkiapay $kkiapay)
     {
-        $secret = config('kkiapay.webhook_secret');
-        abort_unless($secret, 503);
-        abort_unless(hash_equals($secret, $request->header('x-kkiapay-secret', '')), 401);
         if (! in_array($request->input('event'), ['transaction.success', 'transaction.failed'], true)) {
             return response('OK');
         }
