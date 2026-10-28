@@ -23,7 +23,7 @@
 @forelse($articles as $article)<tr>
 <td>{{ $article->titre }}</td>
 <td>{{ $article->category?->nom ?? '—' }}</td>
-<td><span class="admin-status">{{ ['brouillon'=>'Brouillon','publie'=>'Publié','archive'=>'Archivé'][$article->publication] ?? $article->publication }}</span></td>
+<td>{{ $article->publication }}</td>
 <td>
 <div class="editorial-actions">
 <a class="btn btn-secondary" href="{{ route('admin.articles.edit',$article) }}">Modifier</a>
@@ -86,7 +86,7 @@
 </tr>
 </thead>
 <tbody>
-@forelse($projets as $project)@php($collected=$project->collected)<tr>
+@foreach($projets as $project)@php($collected=$project->collected)<tr>
 <td>{{ $project->titre }}</td>
 <td>{{ $project->budget_centimes !== null ? number_format($project->budget_centimes/100,2,',',' ').' €' : 'Non renseigné' }}</td>
 <td>{{ number_format($collected/100,2,',',' ') }} €</td>
@@ -95,7 +95,7 @@
 </progress> {{ round($collected/$project->budget_centimes*100) }} % @else — @endif
 </td>
 </tr>
-@empty<tr><td colspan="4">Les collectes apparaîtront avec vos premiers projets.</td></tr>@endforelse
+@endforeach
 </tbody>
 </table>
 </div>
@@ -121,7 +121,7 @@
 <td>{{ number_format($donation->amount_centimes/100,2,',',' ') }} €
 @if($donation->provider === 'kkiapay')<br><small>Kkiapay · {{ number_format($donation->amount_xof, 0, ',', ' ') }} FCFA<br>{{ $donation->kkiapay_transaction_id ?? 'En attente' }}</small>@else<br><small>Stripe</small>@endif
 </td>
-<td><span class="admin-status admin-status--{{ $donation->status }}">{{ ['pending'=>'En attente','confirmed'=>'Confirmé','failed'=>'Échoué','expired'=>'Expiré'][$donation->status] ?? $donation->status }}</span></td>
+<td>{{ ['pending'=>'En attente','confirmed'=>'Confirmé','failed'=>'Échoué','expired'=>'Expiré'][$donation->status] ?? $donation->status }}</td>
 </tr>
 @empty<tr>
 <td colspan="5">Aucune transaction enregistrée.</td>
