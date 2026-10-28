@@ -38,3 +38,7 @@ L’Admin affiche les transactions et les collectes par projet, leur statut, le 
 `php tests/Smoke/editorial.php` utilise exclusivement une base SQLite en mémoire : migrations, rendu public et Admin, accès ordinaires refusés, brouillons invisibles, publication, webhook Kkiapay authentifié et API simulée, idempotence, absence de confirmation par une simple visite et refus des suppressions anonymes.
 
 `php artisan test --compact --filter=KkiapayDonationTest` vérifie le paiement général et par projet, les montants, les clés absentes, les références, les liens signés et les retours du prestataire. Les paiements et la livraison réelle du webhook restent à valider en sandbox avant l’activation en production. Aucun paiement réel n’est effectué par les tests automatisés.
+
+## Accès et protection des routes
+
+L’administration utilise désormais le préfixe configurable `ADMIN_PATH` (`/espace-equipe` par défaut). Les permissions administrateur restent obligatoires ; l’ancien préfixe et l’alias `/posts` sont retirés. Les quotas, la fermeture de l’inscription publique et les tests de protection sont expliqués dans [SECURITE_ROUTES.md](SECURITE_ROUTES.md).
