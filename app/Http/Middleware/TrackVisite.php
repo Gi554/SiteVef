@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Visite;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\Visite;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackVisite
@@ -12,9 +12,11 @@ class TrackVisite
     public function handle(Request $request, Closure $next): Response
     {
         // Ne tracker que les pages publiques GET (pas admin, pas API, pas assets)
-        if ($request->isMethod('GET') && !$request->is('administrateur*', 'dashboard*', 'login*', 'register*', 'profile*', 'don/merci')) {
+        $response = $next($request);
+        if ($request->isMethod('GET') && $response->isSuccessful()
+            && ! $request->routeIs('admin.*', 'dashboard', 'login', 'register', 'profile.*', 'password.*', 'verification.*', 'donation.kkiapay*', 'donation.success')) {
             $today = now()->toDateString();
-            $ip    = $request->ip();
+            $ip = $request->ip();
 
             // Une seule entrée par IP par jour (visiteur unique journalier)
             Visite::firstOrCreate(
@@ -23,6 +25,6 @@ class TrackVisite
             );
         }
 
-        return $next($request);
+        return $response;
     }
 }
