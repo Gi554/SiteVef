@@ -1,0 +1,87 @@
+name: CD OVH
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [version1]
+  workflow_dispatch:
+    inputs:
+      ci_run_id:
+        description: 'ID de CI verte sur version1 ; vide pour la dernière'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: cd-ovh-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      vars.CD_ENABLED == 'true' &&
+      ((github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')) ||
+      (github.event_name == 'workflow_dispatch' && github.ref_name == 'version1'))
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Sélectionner uniquement une CI verte du dépôt et du commit principal actuel
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RUN: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+        run: |
+          set -euo pipefail
+          run_id="$REQUESTED_RUN"
+          if [ -z "$run_id" ]; then
+            run_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?branch=version1&status=success&per_page=20" \
+              --jq '[.workflow_runs[] | select(.event == "push" or .event == "workflow_dispatch")][0].id')
+          fi
+          [[ "$run_id" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" > "$RUNNER_TEMP/ci-run.json"
+          workflow_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml" --jq .id)
+          jq -e --arg repo "$GITHUB_REPOSITORY" --argjson workflow "$workflow_id" \
+            '.conclusion == "success" and .head_branch == "version1" and .head_repository.full_name == $repo and .workflow_id == $workflow and (.event == "push" or .event == "workflow_dispatch")' \
+            "$RUNNER_TEMP/ci-run.json" >/dev/null
+          sha=$(jq -r .head_sha "$RUNNER_TEMP/ci-run.json")
+          [[ "$sha" =~ ^[a-f0-9]{40}$ ]]
+          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/version1" --jq .object.sha)
+          [ "$sha" = "$current" ]
+          printf 'sha=%s\nrun_id=%s\n' "$sha" "$run_id" >> "$GITHUB_OUTPUT"
+      - name: Télécharger le livrable validé sans le reconstruire
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ steps.release.outputs.run_id }}
+        run: gh run download "$CI_RUN_ID" --repo "$GITHUB_REPOSITORY" --name sitevef-image --dir "$RUNNER_TEMP/release"
+      - name: Vérifier l’intégrité et livrer par SSH
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_SHA: ${{ steps.release.outputs.sha }}
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+          VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          [[ "$VPS_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]+$ ]]
+          [[ "$DEPLOY_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [ -n "$VPS_KNOWN_HOSTS" ] && [ -n "$VPS_DEPLOY_KEY" ]
+          cd "$RUNNER_TEMP/release"
+          checksum=$(cut -d ' ' -f 1 checksum.sha256)
+          [[ "$checksum" =~ ^[a-f0-9]{64}$ ]]
+          printf '%s  sitevef-image.tar.gz\n' "$checksum" | sha256sum -c -
+          [ "$DEPLOY_SHA" = "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/version1" --jq .object.sha)" ]
+          umask 077
+          key_file=$(mktemp)
+          hosts_file=$(mktemp)
+          trap 'rm -f "$key_file" "$hosts_file"' EXIT
+          printf '%s\n' "$VPS_DEPLOY_KEY" > "$key_file"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$hosts_file"
+          ssh -i "$key_file" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$hosts_file" -o ConnectTimeout=15 \
+            "vef-deploy@$VPS_HOST" "deploy $DEPLOY_SHA" < sitevef-image.tar.gz

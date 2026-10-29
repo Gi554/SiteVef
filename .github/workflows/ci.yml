@@ -15,6 +15,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  image:
+    name: Image de production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Construire l’image sans données locales
+        run: docker build --build-arg VEF_REVISION="$GITHUB_SHA" -t "sitevef:$GITHUB_SHA" .
+      - name: Vérifier les scripts et le protocole SSH limité
+        run: |
+          for script in deploy/ovh/*.sh deploy/tests/*.sh; do bash -n "$script"; done
+          bash deploy/tests/ssh-protocol.sh
+      - name: Vérifier le démarrage et les pages publiques de l’image
+        run: bash deploy/tests/container-smoke.sh "$GITHUB_SHA"
+      - name: Préparer l’image validée pour la CD
+        if: vars.CD_ENABLED == 'true' && github.ref_name == 'version1' && github.event_name != 'pull_request'
+        run: |
+          mkdir -p "$RUNNER_TEMP/vef-image"
+          docker save "sitevef:$GITHUB_SHA" | gzip -1 > "$RUNNER_TEMP/vef-image/sitevef-image.tar.gz"
+          cd "$RUNNER_TEMP/vef-image"
+          sha256sum sitevef-image.tar.gz > checksum.sha256
+      - name: Conserver le livrable du commit testé
+        if: vars.CD_ENABLED == 'true' && github.ref_name == 'version1' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sitevef-image
+          path: ${{ runner.temp }}/vef-image/
+          retention-days: 1
+          compression-level: 0
   tests:
     name: Tests PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
