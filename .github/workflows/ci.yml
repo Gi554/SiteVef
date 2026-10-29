@@ -36,11 +36,16 @@ jobs:
           docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE/deploy,target=/scripts,readonly" \
             --entrypoint shellcheck rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
             /scripts/ovh/install.sh /scripts/ovh/release.sh /scripts/ovh/ssh-command.sh \
-            /scripts/tests/container-smoke.sh /scripts/tests/ssh-protocol.sh
+            /scripts/tests/container-smoke.sh /scripts/tests/ssh-protocol.sh /scripts/tests/release-control.sh
       - name: Construire l’image sans données locales
         run: docker build --build-arg VEF_REVISION="$GITHUB_SHA" -t "sitevef:$GITHUB_SHA" .
       - name: Vérifier le démarrage et les pages publiques de l’image
         run: bash deploy/tests/container-smoke.sh "$GITHUB_SHA"
+      - name: Vérifier le retour à la version précédente dans un conteneur isolé
+        run: |
+          docker run --rm --network none --user 0:0 -e VEF_ISOLATED_TEST=1 \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/deploy,target=/scripts,readonly" \
+            --entrypoint bash "sitevef:$GITHUB_SHA" /scripts/tests/release-control.sh
       - name: Préparer l’image validée pour la CD
         if: vars.CD_ENABLED == 'true' && github.ref_name == 'version1' && github.event_name != 'pull_request'
         run: |
