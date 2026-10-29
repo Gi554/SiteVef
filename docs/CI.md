@@ -7,7 +7,7 @@ La CI (intégration continue) exécute automatiquement les vérifications sur Gi
 1. Partir de `version1` à jour et créer une branche dédiée, par exemple `codex/correction-contact`.
 2. Faire des commits courts qui expliquent les changements.
 3. Envoyer cette branche sur GitHub et ouvrir une pull request vers `version1`.
-4. Ouvrir l’onglet **Checks** de la pull request. Deux contrôles sont attendus : `Tests PHP 8.3` et `Tests PHP 8.4`.
+4. Ouvrir l’onglet **Checks** de la pull request. Trois contrôles sont attendus : `Tests PHP 8.3`, `Tests PHP 8.4` et `Image de production`.
 5. Si un contrôle échoue, ouvrir le détail de l’étape rouge, lire l’erreur et corriger sur la même branche. Un nouveau commit relance la CI.
 6. Faire relire puis fusionner la pull request seulement après validation humaine. Ne pas pousser directement sur `version1`.
 
@@ -46,11 +46,11 @@ php tests/Smoke/parrainage.php
 
 ## Protection de la branche et limites
 
-Le workflow signale les erreurs ; il n’interdit pas à lui seul les pushs directs ou les fusions avec des tests rouges. Un administrateur du dépôt doit configurer une règle pour `version1` : pull request obligatoire, au moins une approbation, et les deux contrôles ci-dessus obligatoires avant fusion. Cette configuration GitHub n’est pas incluse dans le fichier YAML.
+Le workflow signale les erreurs ; il n’interdit pas à lui seul les pushs directs ou les fusions avec des tests rouges. Un administrateur du dépôt doit configurer une règle pour `version1` : pull request obligatoire, au moins une approbation, et les trois contrôles ci-dessus obligatoires avant fusion. Cette configuration GitHub n’est pas incluse dans le fichier YAML.
 
 Les actions sont figées sur des SHA de commits plutôt que sur des références mobiles ; leurs versions doivent être révisées lors d’une mise à jour. Le jeton du workflow ne peut que lire le dépôt. Aucune fusion automatique ni publication n’est configurée.
 
-La livraison et le déploiement continus (CD) seront ajoutés séparément lorsque l’hébergement et les environnements seront définis. Le rendu Gmail/Outlook et les vrais retours ou webhooks Kkiapay restent des vérifications distinctes : une CI verte ne les remplace pas.
+La livraison sur le VPS OVH et son activation explicite sont décrites dans [CD_OVH.md](CD_OVH.md). Le rendu Gmail/Outlook et les vrais retours ou webhooks Kkiapay restent des vérifications distinctes : une CI verte ne les remplace pas.
 
 ## Audits des dépendances
 

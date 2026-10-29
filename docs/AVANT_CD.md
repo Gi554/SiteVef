@@ -2,7 +2,7 @@
 
 Les dépendances ont été mises à jour dans les versions majeures existantes (Laravel 12, Tailwind 3 et Vite 7). Les audits PHP de production et JavaScript ne signalent plus d’alerte à la validation de cette PR. La CI réexécute ces audits, les tests et les scénarios publics sur PHP 8.3 et 8.4.
 
-Les formulaires utilisent une file SQL durable, décrite dans [EMAILS.md](EMAILS.md). Le retrait d’un projet conserve les dons affectés, décrit dans [ADMINISTRATION.md](ADMINISTRATION.md). Ces changements ne définissent pas encore un déploiement automatique : l’hébergeur et les environnements restent à choisir.
+Les formulaires utilisent une file SQL durable, décrite dans [EMAILS.md](EMAILS.md). Le retrait d’un projet conserve les dons affectés, décrit dans [ADMINISTRATION.md](ADMINISTRATION.md). Le déploiement sur le VPS OVH est préparé dans [CD_OVH.md](CD_OVH.md). Il reste désactivé tant que le serveur et les paramètres de production ne sont pas configurés.
 
 ## Livrable et état persistant
 
