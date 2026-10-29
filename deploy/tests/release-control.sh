@@ -5,6 +5,11 @@ set -euo pipefail
 directory=$(mktemp -d)
 mkdir -p /srv/vef
 cleanup() {
+    local status=$?
+    if (( status != 0 )); then
+        printf 'Échec du scénario de livraison simulé.\n' >&2
+        cat "$directory/output" "$directory/log" >&2 || true
+    fi
     rm -f /srv/vef/current /srv/vef/current.tmp /srv/vef/domain /srv/vef/deploy.lock
     rmdir /srv/vef
     rm -f "$directory/docker" "$directory/curl" "$directory/sleep" "$directory/df" "$directory/flock" "$directory/log" "$directory/output"

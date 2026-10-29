@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 [[ $EUID -eq 0 && $# -eq 1 && $1 =~ ^[a-f0-9]{40}$ ]] || exit 64
 cd /srv/vef
 exec 9>/srv/vef/deploy.lock
