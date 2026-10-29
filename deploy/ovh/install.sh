@@ -13,7 +13,7 @@ public_key=$(awk 'NF {print $1 " " $2}' "$public_key_file")
 ssh-keygen -lf "$public_key_file" >/dev/null
 source_directory=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 if [[ -f /srv/vef/domain && $(cat /srv/vef/domain) != "$domain" ]]; then
-    printf 'Le domaine existant doit être migré explicitement avant de relancer l’installation.\n' >&2
+    printf "Le domaine existant doit être migré explicitement avant de relancer l'installation.\n" >&2
     exit 64
 fi
 
@@ -24,6 +24,7 @@ if ! command -v docker >/dev/null; then
     install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
     chmod 0644 /etc/apt/keyrings/docker.asc
+    # shellcheck source=/dev/null
     . /etc/os-release
     [[ $ID == ubuntu ]] || exit 64
     printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu %s stable\n' \

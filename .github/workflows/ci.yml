@@ -24,12 +24,21 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-      - name: Construire l’image sans données locales
-        run: docker build --build-arg VEF_REVISION="$GITHUB_SHA" -t "sitevef:$GITHUB_SHA" .
       - name: Vérifier les scripts et le protocole SSH limité
         run: |
           for script in deploy/ovh/*.sh deploy/tests/*.sh; do bash -n "$script"; done
           bash deploy/tests/ssh-protocol.sh
+      - name: Analyser les workflows et les scripts de livraison
+        run: |
+          docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE/.github/workflows,target=/workflows,readonly" \
+            rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            /workflows/ci.yml /workflows/cd.yml
+          docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE/deploy,target=/scripts,readonly" \
+            --entrypoint shellcheck rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            /scripts/ovh/install.sh /scripts/ovh/release.sh /scripts/ovh/ssh-command.sh \
+            /scripts/tests/container-smoke.sh /scripts/tests/ssh-protocol.sh
+      - name: Construire l’image sans données locales
+        run: docker build --build-arg VEF_REVISION="$GITHUB_SHA" -t "sitevef:$GITHUB_SHA" .
       - name: Vérifier le démarrage et les pages publiques de l’image
         run: bash deploy/tests/container-smoke.sh "$GITHUB_SHA"
       - name: Préparer l’image validée pour la CD

@@ -13,7 +13,7 @@ docker run -d --name "$name" --cap-drop ALL --security-opt no-new-privileges:tru
     "sitevef:$revision" /bin/sh -c \
     'touch /tmp/smoke.sqlite && php artisan migrate --force && php artisan config:cache && php artisan route:cache && exec apache2-foreground'
 ready=false
-for attempt in {1..30}; do
+for _ in {1..30}; do
     if docker exec "$name" php -r 'exit(@file_get_contents("http://localhost:8080/up") === false ? 1 : 0);'; then
         ready=true
         break

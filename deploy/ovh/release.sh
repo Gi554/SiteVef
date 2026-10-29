@@ -27,7 +27,7 @@ available=$(df --output=avail -B1 /srv/vef | tail -n1 | tr -d ' ')
 timeout 600 bash -o pipefail -c 'gzip -dc | docker image load'
 image="sitevef:$revision"
 actual=$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image")
-[[ $actual == "$revision" ]] || { printf 'Révision de l’image incorrecte.\n' >&2; exit 65; }
+[[ $actual == "$revision" ]] || { printf "Révision de l'image incorrecte.\n" >&2; exit 65; }
 docker pull caddy:2-alpine
 
 maintenance=false
@@ -51,6 +51,8 @@ if [[ -n $previous ]]; then
     compose "$previous" stop worker
     compose "$previous" stop app
     # VACUUM INTO produit une sauvegarde SQLite cohérente, y compris avec WAL.
+    # Le code PHP doit conserver ses variables sans expansion par Bash.
+    # shellcheck disable=SC2016
     compose "$revision" run --rm --no-deps -v /srv/vef/backups:/backup app php -r '
         $db=getenv("DB_DATABASE");
         if (!is_file($db) || filesize($db)===0) exit(0);
@@ -66,7 +68,7 @@ compose "$revision" up -d app worker proxy
 compose "$revision" run --rm --no-deps app php artisan up
 
 healthy=false
-for attempt in {1..60}; do
+for _ in {1..60}; do
     if curl --fail --silent --show-error --max-time 5 \
         --resolve "$domain:443:127.0.0.1" "https://$domain/up" >/dev/null 2>&1; then
         healthy=true
@@ -77,7 +79,7 @@ done
 $healthy || { printf 'Le contrôle HTTPS a échoué.\n' >&2; false; }
 worker=$(compose "$revision" ps -q worker)
 [[ -n $worker && $(docker inspect --format '{{.State.Running}} {{.RestartCount}}' "$worker") == 'true 0' ]] \
-    || { printf 'Le worker de notification n’est pas stable.\n' >&2; false; }
+    || { printf "Le worker de notification n'est pas stable.\n" >&2; false; }
 printf '%s\n' "$revision" >/srv/vef/current.tmp
 mv /srv/vef/current.tmp /srv/vef/current
 maintenance=false
