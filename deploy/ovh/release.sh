@@ -37,7 +37,7 @@ rollback() {
     if $maintenance && [[ -n $previous ]]; then
         printf 'Échec : redémarrage de la version précédente, sans rollback SQL automatique.\n' >&2
         compose "$previous" up -d app worker proxy || true
-        compose "$previous" run --rm --no-deps app php artisan up || true
+        compose "$previous" exec -T app php artisan up || true
     elif $maintenance; then
         compose "$revision" stop app worker proxy || true
     fi
@@ -65,7 +65,7 @@ fi
 maintenance=true
 compose "$revision" run --rm --no-deps app php artisan migrate --force --no-interaction
 compose "$revision" up -d app worker proxy
-compose "$revision" run --rm --no-deps app php artisan up
+compose "$revision" exec -T app php artisan up
 
 healthy=false
 for _ in {1..60}; do

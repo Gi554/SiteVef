@@ -12,18 +12,23 @@ cleanup() {
     fi
     rm -f /srv/vef/current /srv/vef/current.tmp /srv/vef/domain /srv/vef/deploy.lock
     rmdir /srv/vef
-    rm -f "$directory/docker" "$directory/curl" "$directory/sleep" "$directory/df" "$directory/flock" "$directory/log" "$directory/output"
+    rm -f "$directory/docker" "$directory/curl" "$directory/sleep" "$directory/df" "$directory/flock" "$directory/log" "$directory/output" "$directory/app-running"
     rmdir "$directory"
 }
 trap cleanup EXIT
 printf '%s\n' example.org >/srv/vef/domain
 export MOCK_LOG="$directory/log"
+export MOCK_APP_RUNNING="$directory/app-running"
 export MOCK_SHA=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 previous=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 cat >"$directory/docker" <<'STUB'
 #!/usr/bin/env bash
 set -eu
 printf '%s|%s\n' "${VEF_RELEASE:-}" "$*" >>"$MOCK_LOG"
+if [[ $* == *' up -d app worker proxy' ]]; then touch "$MOCK_APP_RUNNING"; fi
+if [[ $* == *' stop app' ]]; then rm -f "$MOCK_APP_RUNNING"; fi
+# Un conteneur ponctuel app reprend l’adresse fixe du service et entrerait en conflit.
+if [[ $* == *' run --rm --no-deps app php artisan up' && -e $MOCK_APP_RUNNING ]]; then exit 42; fi
 if [[ $1 == image && $2 == load ]]; then cat >/dev/null; exit 0; fi
 if [[ $1 == image && $2 == inspect ]]; then printf '%s\n' "${MOCK_LABEL:-$MOCK_SHA}"; exit 0; fi
 if [[ $1 == image && $2 == ls ]]; then exit 0; fi
@@ -43,6 +48,7 @@ release() { printf 'image fictive\n' | gzip | bash /scripts/ovh/release.sh "$MOC
 
 release
 [[ $(cat /srv/vef/current) == "$MOCK_SHA" ]]
+grep -q "^$MOCK_SHA|.* exec -T app php artisan up$" "$MOCK_LOG"
 
 printf '%s\n' "$previous" >/srv/vef/current
 : >"$MOCK_LOG"
