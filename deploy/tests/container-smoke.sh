@@ -6,6 +6,12 @@ name="vef-smoke-$$"
 cleanup() { docker rm -f "$name" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 app_key="base64:$(openssl rand -base64 32)"
+# Refuser une image qui démarre PHP avec une extension cassée.
+startup=$(docker run --rm "sitevef:$revision" php -r '
+    if (!extension_loaded("Zend OPcache")) exit(1);
+    echo "PHP_EXTENSIONS_OK";
+' 2>&1)
+[[ $startup == PHP_EXTENSIONS_OK ]] || { printf '%s\n' "$startup" >&2; exit 1; }
 docker run -d --name "$name" --cap-drop ALL --security-opt no-new-privileges:true \
     -e APP_ENV=testing -e APP_DEBUG=false -e APP_KEY="$app_key" \
     -e APP_URL=http://localhost:8080 -e DB_CONNECTION=sqlite \

@@ -28,6 +28,9 @@ services:
         ipv4_address: 172.30.44.3
   worker:
     <<: *application
+    networks:
+      private:
+        ipv4_address: 172.30.44.4
     mem_limit: 384m
     command: [php, artisan, 'queue:work', form-notifications, '--queue=notifications', '--timeout=30', '--tries=5', '--sleep=3']
     stop_grace_period: 45s
