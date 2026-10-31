@@ -8,11 +8,12 @@ project="vef-compose-smoke-$$"
 compose() { docker compose -p "$project" -f "$directory/compose.json" "$@"; }
 cleanup() {
     compose down --volumes >/dev/null 2>&1 || true
-    rm -f "$directory/compose.json" "$directory/production.json" "$directory/Caddyfile"
+    rm -f "$directory/compose.json" "$directory/production.json" "$directory/Caddyfile" "$directory/override.yml"
     rmdir "$directory"
 }
 trap cleanup EXIT
-docker compose --env-file /dev/null -f deploy/ovh/compose.yml config \
+printf 'services:\n  app:\n    env_file: !reset []\n  worker:\n    env_file: !reset []\n' >"$directory/override.yml"
+docker compose --env-file /dev/null -f deploy/ovh/compose.yml -f "$directory/override.yml" config \
     --no-env-resolution --no-path-resolution --format json >"$directory/production.json"
 export VEF_SMOKE_DIRECTORY="$directory"
 VEF_SMOKE_KEY="base64:$(openssl rand -base64 32)"
