@@ -65,11 +65,18 @@ class AdminController extends Controller
             'evolution_visiteurs' => $evolutionVisiteurs,
         ];
 
+        $articles = \App\Models\Article::with('category')->latest()->get();
+        $categories = \App\Models\Category::orderBy('nom')->get();
+        $donations = \App\Models\Donation::with('projet')->latest()->paginate(30);
+        $confirmed = \App\Models\Donation::where('status', 'confirmed')->sum('amount_centimes');
+        $confirmedXof = \App\Models\Donation::where('status', 'confirmed')->sum('amount_xof');
+        $pending = \App\Models\Donation::where('status', 'pending')->count();
+        $recentDonations = \App\Models\Donation::with('projet')->latest()->limit(5)->get();
         $articles = Article::with('category')->latest()->get();
         $categories = Category::orderBy('nom')->get();
         $donations = Donation::with('projet')->latest()->paginate(30);
 
-        return view('admin.admin', compact('articles', 'categories', 'donations', 'projets', 'messages', 'candidatures', 'temoignages', 'membres', 'stats', 'graphLabels', 'graphDonnees'));
+        return view('admin.admin', compact('articles', 'categories', 'donations', 'projets', 'messages', 'candidatures', 'temoignages', 'membres', 'stats', 'graphLabels', 'graphDonnees', 'confirmed', 'confirmedXof', 'pending', 'recentDonations'));
     }
 
     public function store(Request $request)
