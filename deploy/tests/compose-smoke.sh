@@ -54,6 +54,9 @@ for _ in {1..30}; do
     sleep 2
 done
 if ! $ready; then compose logs --tail 40; exit 1; fi
+compose exec -T app php artisan down --retry=30
+compose exec -T app php artisan up
+curl --fail --silent --max-time 5 "http://$endpoint/up" >/dev/null
 worker=$(compose ps -q worker)
 [[ -n $worker && $(docker inspect --format '{{.State.Running}} {{.RestartCount}}' "$worker") == 'true 0' ]]
 printf 'Application, worker et proxy démarrent ensemble sur le réseau de production avec des données isolées.\n'
