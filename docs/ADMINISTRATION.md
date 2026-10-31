@@ -76,3 +76,14 @@ node --check public/Style1/js/admin-workspace.js
 ```
 
 Les tests `AdminWorkspaceTest.php` couvrent les accès, les totaux confirmés avec conservation du montant XOF et l’enregistrement du statut des messages. Les contrôles navigateur ont été effectués à 1440 px et 390 px avec une base de démonstration séparée : huit panneaux, trois éditeurs, recherche, fenêtres, sauvegarde d’un membre et échec réseau simulé. Cette base et les captures ne font pas partie du dépôt.
+## Accès et protection des routes
+
+L’administration utilise désormais le préfixe configurable `ADMIN_PATH` (`/espace-equipe` par défaut). Les permissions administrateur restent obligatoires ; l’ancien préfixe et l’alias `/posts` sont retirés. Les quotas, la fermeture de l’inscription publique et les tests de protection sont expliqués dans [SECURITE_ROUTES.md](SECURITE_ROUTES.md).
+
+## Retrait des projets et historique des dons
+
+Le bouton « Retirer du site » effectue une suppression logique : `projets.deleted_at` est renseigné. Le projet disparaît des listes de gestion et des pages publiques, et ne peut plus recevoir de nouvelle demande de paiement. La relation `Donation::projet()` inclut les projets retirés afin de conserver la destination des dons en attente et confirmés. Un lien de paiement créé avant le retrait conserve son projet d’origine.
+
+La migration `2026_10_28_000001_preserve_deleted_projects_history.php` doit être appliquée avant de servir le nouveau code. Elle ajoute une colonne nullable et ne modifie pas les dons existants. Les affectations déjà perdues avant cette migration ne sont pas reconstituées automatiquement. Ne pas utiliser `forceDelete()` pour supprimer ces archives ; un traitement exceptionnel nécessiterait une politique de conservation dédiée.
+
+Le rollback de cette migration supprime le marqueur de retrait et peut rendre à nouveau visibles des projets conservés. Pour revenir à l’ancien code, maintenir d’abord les projets retirés en publication `archive`, ou privilégier un correctif en avant. Ce rollback n’est pas une opération automatique de déploiement.

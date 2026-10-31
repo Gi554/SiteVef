@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\NouveauMessage;
+use App\Jobs\SendFormNotification;
+use App\Models\Article;
 use App\Models\Membre;
 use App\Models\Messages;
 use App\Models\ProgrammeParrainage;
 use App\Models\Projet;
 use App\Models\Temoignage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class ControllerAccueil extends Controller
 {
@@ -18,7 +19,7 @@ class ControllerAccueil extends Controller
         $projets = Projet::published()->with('images')->get();
         $temoignages = Temoignage::where('actif', true)->orderBy('created_at', 'desc')->get();
 
-        $actualites = \App\Models\Article::published()->with('category')->latest('published_at')->limit(3)->get();
+        $actualites = Article::published()->with('category')->latest('published_at')->limit(3)->get();
 
         $programmesParrainage = ProgrammeParrainage::orderBy('id')->get();
         $requestedProgramme = $request->query('parrainage');
@@ -51,20 +52,21 @@ class ControllerAccueil extends Controller
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'objet' => 'required|string|max:255',
-            'message' => 'required|string',
+            'message' => 'required|string|max:10000',
         ]);
 
-        $contactMessage = Messages::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'objet' => $request->objet,
-            'message' => $request->message,
-            'lu' => false,
-        ]);
+        DB::transaction(function () use ($request) {
+            $contactMessage = Messages::create([
+                'nom' => $request->nom,
+                'prenom' => $request->prenom,
+                'email' => $request->email,
+                'objet' => $request->objet,
+                'message' => $request->message,
+                'lu' => false,
+            ]);
+            SendFormNotification::dispatch($contactMessage);
+        });
 
-        Mail::to('contact@verredeaufraiche.com')->send(new NouveauMessage($contactMessage));
-
-        return redirect()->route('index')->with('success', 'Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.');
+        return redirect()->route('index')->with('success', 'Votre message a bien été enregistré. Nous vous répondrons dans les plus brefs délais.');
     }
 }

@@ -1,0 +1,59 @@
+name: vef
+
+x-application: &application
+  image: sitevef:${VEF_RELEASE:?Version de livraison manquante}
+  init: true
+  restart: unless-stopped
+  env_file: /srv/vef/shared/laravel.env
+  volumes:
+    - /srv/vef/shared/storage:/var/www/html/storage
+    - /srv/vef/shared/uploads/projets:/var/www/html/public/Style1/imagesProjets
+    - /srv/vef/shared/uploads/membres:/var/www/html/public/Style1/imagesMembres
+    - /srv/vef/shared/uploads/actualites:/var/www/html/public/Style1/imagesActualites
+    - /srv/vef/shared/uploads/parrainage:/var/www/html/public/Style1/imagesParrainage
+  networks: [private]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: '3'}
+
+services:
+  app:
+    <<: *application
+    mem_limit: 768m
+    command: [/bin/sh, -c, 'php artisan config:cache && php artisan route:cache && php artisan view:cache && exec apache2-foreground']
+    networks:
+      private:
+        ipv4_address: 172.30.44.3
+  worker:
+    <<: *application
+    networks:
+      private:
+        ipv4_address: 172.30.44.4
+    mem_limit: 384m
+    command: [php, artisan, 'queue:work', form-notifications, '--queue=notifications', '--timeout=30', '--tries=5', '--sleep=3']
+    stop_grace_period: 45s
+    healthcheck: {disable: true}
+  proxy:
+    image: caddy:2-alpine
+    mem_limit: 128m
+    restart: unless-stopped
+    ports: ['80:80', '443:443', '443:443/udp']
+    environment:
+      SITE_DOMAIN: ${VEF_DOMAIN:?Domaine manquant}
+    volumes:
+      - /srv/vef/config/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/vef/shared/caddy/data:/data
+      - /srv/vef/shared/caddy/config:/config
+    networks:
+      private:
+        ipv4_address: 172.30.44.2
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+
+networks:
+  private:
+    ipam:
+      config: [{subnet: 172.30.44.0/24}]

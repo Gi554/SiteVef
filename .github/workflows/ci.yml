@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [version1]
+  push:
+    branches: [version1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: Image de production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Vérifier les scripts et le protocole SSH limité
+        run: |
+          for script in deploy/ovh/*.sh deploy/tests/*.sh; do bash -n "$script"; done
+          bash deploy/tests/ssh-protocol.sh
+      - name: Analyser les workflows et les scripts de livraison
+        run: |
+          docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE/.github/workflows,target=/workflows,readonly" \
+            rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            /workflows/ci.yml /workflows/cd.yml
+          docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE/deploy,target=/scripts,readonly" \
+            --entrypoint shellcheck rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            /scripts/ovh/install.sh /scripts/ovh/release.sh /scripts/ovh/ssh-command.sh \
+            /scripts/tests/container-smoke.sh /scripts/tests/ssh-protocol.sh /scripts/tests/release-control.sh /scripts/tests/compose-smoke.sh
+      - name: Construire l’image sans données locales
+        run: docker build --build-arg VEF_REVISION="$GITHUB_SHA" -t "sitevef:$GITHUB_SHA" .
+      - name: Vérifier le démarrage et les pages publiques de l’image
+        run: bash deploy/tests/container-smoke.sh "$GITHUB_SHA"
+      - name: Vérifier le démarrage simultané de l’application, du worker et du proxy
+        run: bash deploy/tests/compose-smoke.sh "$GITHUB_SHA"
+      - name: Vérifier le retour à la version précédente dans un conteneur isolé
+        run: |
+          docker run --rm --network none --user 0:0 -e VEF_ISOLATED_TEST=1 \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/deploy,target=/scripts,readonly" \
+            --entrypoint bash "sitevef:$GITHUB_SHA" /scripts/tests/release-control.sh
+      - name: Préparer l’image validée pour la CD
+        if: vars.CD_ENABLED == 'true' && github.ref_name == 'version1' && github.event_name != 'pull_request'
+        run: |
+          mkdir -p "$RUNNER_TEMP/vef-image"
+          docker save "sitevef:$GITHUB_SHA" | gzip -1 > "$RUNNER_TEMP/vef-image/sitevef-image.tar.gz"
+          cd "$RUNNER_TEMP/vef-image"
+          sha256sum sitevef-image.tar.gz > checksum.sha256
+      - name: Conserver le livrable du commit testé
+        if: vars.CD_ENABLED == 'true' && github.ref_name == 'version1' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sitevef-image
+          path: ${{ runner.temp }}/vef-image/
+          retention-days: 1
+          compression-level: 0
+  tests:
+    name: Tests PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pest 4 / PHPUnit 12 nécessitent PHP 8.3 ou supérieur.
+        php: ['8.3', '8.4']
+    env:
+      APP_ENV: testing
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      MAIL_MAILER: array
+      QUEUE_CONNECTION: sync
+      KKIAPAY_SANDBOX: 'true'
+      KKIAPAY_PUBLIC_KEY: ''
+      KKIAPAY_PRIVATE_KEY: ''
+      KKIAPAY_SECRET_KEY: ''
+      KKIAPAY_WEBHOOK_SECRET: ''
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Installer PHP et Composer
+        uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, xml, curl, pdo_sqlite, sqlite3, gd, intl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Vérifier les dépendances PHP déclarées
+        run: composer validate --strict
+
+      - name: Installer les dépendances PHP verrouillées
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Auditer les dépendances PHP de production
+        run: composer audit --locked --no-dev
+
+      - name: Préparer un environnement de test sans secrets
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      - name: Installer les dépendances JavaScript verrouillées
+        run: npm ci --no-audit --no-fund
+
+      - name: Auditer les dépendances JavaScript et les outils de build
+        run: npm audit
+
+      - name: Compiler les ressources du site
+        run: npm run build
+
+      - name: Exécuter tous les tests Laravel
+        run: php artisan test --compact --fail-on-risky --fail-on-warning
+
+      - name: Vérifier les pages, les accès et les dons
+        run: php tests/Smoke/editorial.php
+
+      - name: Vérifier le parcours de parrainage
+        run: php tests/Smoke/parrainage.php

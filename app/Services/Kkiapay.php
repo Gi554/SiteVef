@@ -17,6 +17,16 @@ class Kkiapay
     public function confirm(Donation $donation, string $transactionId, bool $trustedWebhook = false): void
     {
         abort_unless(self::available(), 503);
+        $donation = $donation->fresh();
+        abort_unless($donation && $donation->provider === 'kkiapay', 404);
+        if ($donation->status === 'confirmed') {
+            if ($donation->kkiapay_transaction_id !== $transactionId) {
+                throw ValidationException::withMessages(['payment' => 'Ce don est déjà associé à une autre transaction.']);
+            }
+
+            // Une notification rejouée ne déclenche aucun nouvel appel au prestataire.
+            return;
+        }
         $base = config('kkiapay.sandbox') ? 'https://api-sandbox.kkiapay.me' : 'https://api.kkiapay.me';
         $transaction = Http::acceptJson()->withHeaders([
             'X-API-KEY' => config('kkiapay.public_key'),

@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: ['kkiapay/webhook']);
+        $middleware->prependToPriorityList(\Illuminate\Routing\Middleware\ThrottleRequests::class, \App\Http\Middleware\VerifyKkiapayWebhook::class);
+        $middleware->prependToPriorityList(\Illuminate\Routing\Middleware\ThrottleRequests::class, \Illuminate\Routing\Middleware\ValidateSignature::class);
         $middleware->web(append: [
+            \App\Http\Middleware\ProtectSensitiveResponses::class,
             \App\Http\Middleware\TrackVisite::class,
         ]);
     })

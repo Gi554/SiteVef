@@ -7,6 +7,14 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Travailler sur le projet VEF
+
+Les changements passent par une branche dédiée et une pull request vers `version1`.
+Lire [le guide CI](docs/CI.md) pour comprendre les vérifications automatiques et les relancer en local.
+La CI ne déploie pas le site ; la CD sera configurée séparément.
+
+Documentation fonctionnelle : [administration](docs/ADMINISTRATION.md), [paiements Kkiapay](docs/KKIAPAY.md), [emails](docs/EMAILS.md).
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
