@@ -81,14 +81,26 @@
 .membre-cache {
     display: none !important;
 }
+
+/* Barre de filtres : collante sur grand écran, normale sur mobile */
+.barre-filtres {
+    position: sticky; top: 80px; z-index: 40;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+@media (max-width: 767px) {
+    .barre-filtres { position: static; }
+}
 </style>
 
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
 {{-- BARRE DE RECHERCHE & FILTRES                                            --}}
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
 @if($membres->count() > 0)
-<div style="position:sticky; top:80px; z-index:40; background:rgba(255,255,255,0.97); backdrop-filter:blur(12px); border-bottom:1px solid #e5e7eb; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-    <div style="max-width:80rem; margin:0 auto; padding:1rem 1.5rem;">
+<div class="barre-filtres">
+        <div style="max-width:80rem; margin:0 auto; padding:1rem 1.5rem;">
 
         {{-- Ligne 1 : recherche + compteur --}}
         <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
