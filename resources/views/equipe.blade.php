@@ -213,11 +213,15 @@
                     </span>
 
                     {{-- Bio --}}
+            
                     @if($membre->bio)
-                    <p style="margin-top:0.875rem; font-size:0.8rem; color:#6b7280; line-height:1.6; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">
-                        {{ $membre->bio }}
-                    </p>
+                    <div class="membre-bio">
+                        <p class="membre-bio__texte" style="margin-top:0.875rem; font-size:0.8rem; color:#6b7280; line-height:1.6; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical;">{{ $membre->bio }}</p>
+                        <button type="button" class="membre-bio__bouton" aria-expanded="false" hidden
+                                style="margin-top:0.5rem; background:none; border:0; padding:0; font-size:0.8rem; font-weight:600; color:#1d4ed8; cursor:pointer;">Lire la suite</button>
+                    </div>
                     @endif
+                
 
                 </div>
             </article>
@@ -365,5 +369,20 @@
     };
 
 })();
+</script>
+
+<script>
+document.querySelectorAll('.membre-bio').forEach(function (bloc) {
+    var texte = bloc.querySelector('.membre-bio__texte');
+    var bouton = bloc.querySelector('.membre-bio__bouton');
+    if (texte.scrollHeight > texte.clientHeight + 1) { bouton.hidden = false; }
+    bouton.addEventListener('click', function () {
+        var ouvert = bouton.getAttribute('aria-expanded') === 'true';
+        texte.style.webkitLineClamp = ouvert ? '4' : 'unset';
+        texte.style.display = ouvert ? '-webkit-box' : 'block';
+        bouton.setAttribute('aria-expanded', ouvert ? 'false' : 'true');
+        bouton.textContent = ouvert ? 'Lire la suite' : 'Réduire';
+    });
+});
 </script>
 @endpush
